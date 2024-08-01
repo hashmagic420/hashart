@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%sveltekit.assets%/favicon.webp" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>hash.art</title>
+    <meta name="description" content="hash.art" />
+    <style>
+        body {
+        margin: 0;
+        overflow: hidden;
+        user-select: none;
+        display: flex;
+        }
+        canvas {
+        display: block;
+        }
+        .toolbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 20%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        overflow-y: auto;
+        }
+        .toolbar a {
+        color: #ffa500; /* orange */
+        text-decoration: none;
+        margin-right: 10px;
+        }
+        .toolbar p {
+        margin: 5px 0;
+        }
+        .content {
+        margin-left: 20%;
+        width: 80%;
+        height: 100vh;
+        }
+        .footer {
+        position: fixed;
+        bottom: 0;
+        left: 20%;
+        width: 80%;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        text-align: center;
+        padding: 10px;
+        z-index: 1000;
+        }
+        .music-player {
+        margin-top: 10px;
+        }
+    </style>
+  </head>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4LXW41QLZW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-4LXW41QLZW');
+  </script>
+
+  <body>
+    <div class="toolbar">
+        <p class="text-lg mb-3">
+            <a href="tool/convert.html" target="_blank">Converting & Resizing App</a>
+        </p>
+        <p>
+            The "Converting & Resizing App" is a versatile web application that enables
+            users to convert and resize images across various formats, including JPEG,
+            PNG, WebP, GIF, RAW, and PDF, with options for both lossless and lossy
+            compression. Featuring a user-friendly interface and a compression slider
+            for fine-tuning image quality, the app ensures seamless image processing
+            directly in the browser without any backend setup.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/base64.html" target="_blank">Media to Base64</a>
+        </p>
+        <p>
+            This web application allows users to upload images, audio, and video files,
+            convert them to Base64 encoded strings, and download the converted files.
+            Users can view their uploaded media directly on the app and easily obtain
+            the Base64 representation for use in their projects.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/hashastencil.html" target="_blank">Hash-A-Stencil</a>
+        </p>
+        <p>
+            Stencil Maker is a web app that allows users to upload images and convert
+            them into downloadable stencil outlines using advanced edge detection
+            algorithms. Simply upload your image, and the app will generate a clean,
+            ready-to-use stencil that can be easily downloaded for your art projects.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/typography.html" target="_blank">Typography Playground</a>
+        </p>
+        <p>
+            The Typography Playground web application is an interactive tool that allows
+            users to experiment with various typographic settings, including font
+            selection, size, weight, style, alignment, spacing, and color, with a live
+            preview. It features a responsive neuromorphic design and additional options
+            like text shadow effects, background color customization, and preset styles,
+            ensuring a comprehensive and user-friendly experience.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/hashacollage.html" target="_blank">Hash-A-Collage</a>
+        </p>
+        <p>
+            With this app you'll be able to visit hash.art and make all your collages
+            that includes images, videos, texts, shapes and then export as an HTML for
+            maximum efficiency!
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/hashacolor.html" target="_blank">Hash-A-Color</a>
+        </p>
+        <p>
+            With this app you'll be able to randomly generate any color and jot down for
+            reference when creating YOUR next app!
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/pixelmagiceditor.html" target="_blank">Pixel Magic Editor</a>
+        </p>
+        <p>
+            Create pixel art effortlessly with the "Pixel Magic Editor". Customize your
+            canvas size, choose colors, and create stamps to bring your digital art to
+            life.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/hashabeat.html" target="_blank">Hash-A-Beat</a>
+        </p>
+        <p>
+            Hash-A-Beat is an interactive music creation tool that allows users to
+            compose 8-beat sequences with customizable octaves, playback speed, and
+            looping options. Users can play their compositions in real-time and download
+            them as high-quality audio recordings.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/artifyme.html" target="_blank">Artify Me</a>
+        </p>
+        <p>
+            Unleash your inner artist with Artify Me! Transform your selfies into
+            stunning masterpieces with a variety of artistic styles, all with just a few
+            clicks.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/momentomori.html" target="_blank">Momento Mori Board</a>
+        </p>
+        <p>
+            A memento mori board is a grid layout featuring 52 weeks by 90 years,
+            visually representing the entirety of a typical human lifespan. This tool
+            serves as a powerful reminder to live each week with intention and
+            mindfulness, appreciating the finite nature of life.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/3dinteractive.html" target="_blank"
+            >3D-Interactive Builder</a
+            >
+        </p>
+        <p>
+            This the essential parts for building a 3D interactive scene, including
+            adding and controlling primitives, managing lights, using dat.GUI for
+            controls, and handling basic interactions like object selection and viewport
+            controls.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/etchascribe.html" target="_blank">Etch-A-Scribe</a>
+        </p>
+        <p>
+            A familiar yet hash.art-centric take on the classic "Etch-A-Sketch"
+            popularized on July 12, 1960. It was invented by André Cassagnes, a French
+            electrician, and manufactured by the Ohio Art Company.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/recursivebuilder.html" target="_blank">Recursive Builder</a>
+        </p>
+        <p>
+            Easy recursive builder for Doginals on the Dogecoin Blockchain; follow all
+            instructions thoroughly when using.
+        </p>
+        <p class="text-lg mb-3">
+            <a href="tool/magichtmleditor.html" target="_blank"
+            >HTML-Live Code Editor</a
+            >
+        </p>
+        <p>Individually pixelate or batch pixelate any image!</p>
+        <p class="text-lg mb-3">
+            <a href="tool/pixelate.html" target="_blank">Batch Pixelation</a>
+        </p>
+        <p>Individually pixelate or batch pixelate any image!</p>
+        <p class="text-lg mb-3">
+            <a href="tool/hat.html" target="_blank">HAT: Hash.Art Tool</a>
+        </p>
+        <p>
+            The ultimate all-in-one solution for all your file management needs. With
+            HAT, you can easily compress, convert, upload, download, and even paint your
+            files with just a few clicks. Whether you're a professional designer or a
+            casual user, HAT has everything you need to streamline your workflow and
+            enhance your creativity. Say goodbye to multiple apps and hello to HAT - the
+            only tool you'll ever need.
+        </p>
+        <div class="music-player">
+            <label for="music-upload">Upload Music:</label>
+            <input type="file" id="music-upload" accept="audio/*" />
+            <audio id="audio-player" controls style="width: 100%; margin-top: 10px">
+            Your browser does not support the audio element.
+            </audio>
+        </div>
+        </div>
+        <div class="content">
+        <script type="module">
+            import * as THREE from "https://cdn.skypack.dev/three@0.136.0/build/three.module.js";
+            import { OrbitControls } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/controls/OrbitControls.js";
+            import { FontLoader } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/loaders/FontLoader.js";
+            import { TextGeometry } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/geometries/TextGeometry.js";
+            import { EffectComposer } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/postprocessing/EffectComposer.js";
+            import { RenderPass } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/postprocessing/RenderPass.js";
+            import { UnrealBloomPass } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/postprocessing/UnrealBloomPass.js";
+            import { ShaderPass } from "https://cdn.skypack.dev/three@0.136.0/examples/jsm/postprocessing/ShaderPass.js";
+            import { gsap } from "https://cdn.skypack.dev/gsap@3.9.1";
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+            );
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            camera.position.set(0, 30, 70);
+
+            const controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.minPolarAngle = Math.PI / 4;
+            controls.maxPolarAngle = Math.PI / 2;
+            controls.minDistance = 1;
+            controls.maxDistance = 70;
+
+            const ambientLight = new THREE.AmbientLight(0xffa500, 1); // orange
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0x000080, 1); // navy blue
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+
+            const composer = new EffectComposer(renderer);
+            composer.addPass(new RenderPass(scene, camera));
+
+            const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.5,
+            0.4,
+            0.85
+            );
+            bloomPass.threshold = 0.0;
+            bloomPass.strength = 1.2;
+            bloomPass.radius = 0.05;
+            composer.addPass(bloomPass);
+
+            // Text Geometry: HASH.ART
+            const fontLoader = new FontLoader();
+            fontLoader.load(
+            "https://threejs.org/examples/fonts/helvetiker_bold.typeface.json",
+            function (font) {
+                const textGeometry = new TextGeometry("HASH.ART", {
+                font: font,
+                size: 10,
+                height: 2,
+                curveSegments: 12,
+                bevelEnabled: true,
+                bevelThickness: 1,
+                bevelSize: 0.5,
+                bevelOffset: 0,
+                bevelSegments: 5,
+                });
+
+                textGeometry.computeBoundingBox();
+                const boundingBox = textGeometry.boundingBox;
+                const xOffset = (boundingBox.max.x - boundingBox.min.x) * 0.5;
+                textGeometry.translate(-xOffset, 0, 0);
+
+                const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffa500 }); // orange
+                const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+                textMesh.position.set(0, 10, 0); // Adjust position as needed
+                scene.add(textMesh);
+            }
+            );
+
+            // Background shaders
+            const shaderMaterialStripes = new THREE.ShaderMaterial({
+            uniforms: {
+                color1: { value: new THREE.Color(0xffa500) }, // orange
+                color2: { value: new THREE.Color(0x000080) }, // navy blue
+                color3: { value: new THREE.Color(0xffffff) }, // white
+                opacity1: { value: 0.1 },
+                opacity2: { value: 0.1 },
+                opacity3: { value: 0.2 },
+                size1: { value: 0.33 },
+                size2: { value: 0.11 },
+                size3: { value: 0.33 },
+            },
+            vertexShader: `
+            varying vec2 vUv;
+
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+            fragmentShader: `
+            uniform vec3 color1;
+            uniform vec3 color2;
+            uniform vec3 color3;
+            uniform float opacity1;
+            uniform float opacity2;
+            uniform float opacity3;
+            uniform float size1;
+            uniform float size2;
+            uniform float size3;
+
+            varying vec2 vUv;
+
+            void main() {
+                vec3 color = vec3(0.0);
+                float alpha = 1.0;
+
+                float diagonalPosition = mod(vUv.x + vUv.y, 1.0);
+
+                if (diagonalPosition < size1) {
+                    color = color1;
+                    alpha = opacity1;
+                } else if (diagonalPosition < size1 + size2) {
+                    color = color2;
+                    alpha = opacity2;
+                } else if (diagonalPosition < size1 + size2 + size3) {
+                    color = color3;
+                    alpha = opacity3;
+                }
+
+                gl_FragColor = vec4(color, alpha);
+            }
+        `,
+            transparent: true,
+            side: THREE.DoubleSide,
+            });
+
+            const geometry = new THREE.BoxGeometry(400, 400, 400);
+            const mesh = new THREE.Mesh(geometry, shaderMaterialStripes);
+            scene.add(mesh);
+
+            window.addEventListener("resize", onWindowResize, false);
+
+            function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            composer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            composer.render();
+            }
+
+            animate();
+
+            document
+            .getElementById("music-upload")
+            .addEventListener("change", function (event) {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                const audioPlayer = document.getElementById("audio-player");
+                audioPlayer.src = e.target.result;
+                audioPlayer.play();
+                };
+                reader.readAsDataURL(file);
+            });
+        </script>
+        </div>
+        <div class="footer">hash.art 2024 ©</div>
+  </body>
+</html>
