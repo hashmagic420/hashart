@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuromorphic Pixel Art Editor</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #E64A19;
+            color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .editor-container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            padding: 20px;
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: 20px 20px 60px #c1441a, -20px -20px 60px #ff521e;
+        }
+        .tools, .properties {
+            display: flex;
+            flex-direction: column;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 5px 5px 10px #c1441a, -5px -5px 10px #ff521e;
+        }
+        .tools div, .properties div {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: #fff;
+            box-shadow: inset 2px 2px 5px #c1441a, inset -2px -2px 5px #ff521e;
+            cursor: pointer;
+            text-align: center;
+        }
+        .tools div.active, .properties div.active {
+            background: #666;
+        }
+        .pixel-grid {
+            display: grid;
+            gap: 2px;
+            margin: 10px;
+        }
+        .pixel {
+            width: 20px;
+            height: 20px;
+            background: #888;
+            border-radius: 5px;
+            box-shadow: 5px 5px 10px #c1441a, -5px -5px 10px #ff521e;
+            cursor: pointer;
+        }
+        .color-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+        }
+        .color-picker div {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .color-picker div.selected {
+            border: 2px solid #fff;
+        }
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 20px 20px 60px #c1441a, -20px -20px 60px #ff521e;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        .modal-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .modal-header span {
+            font-size: 18px;
+        }
+        .modal-header button {
+            background: transparent;
+            border: none;
+            color: #f0f0f0;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .stamps {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .stamps div {
+            width: 50px;
+            height: 50px;
+            background: #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .create-stamp-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 20px);
+            grid-template-rows: repeat(7, 20px);
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+        .create-stamp-grid .pixel {
+            cursor: pointer;
+            background: #888;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 24px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+        .highlighted-text {
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 1);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <div class="tools">
+            <div id="new">New</div>
+            <div id="draw" class="active">Draw</div>
+            <div id="erase">Erase</div>
+            <div id="fill">Fill</div>
+            <div id="color-picker">Color Picker</div>
+            <div id="stamp">Stamp</div>
+            <div id="create">Create</div>
+        </div>
+        <div class="pixel-grid" id="pixel-grid" style="grid-template-columns: repeat(34, 20px); grid-template-rows: repeat(23, 20px);">
+            <!-- Generate 34x23 grid of pixels -->
+            <script>
+                for (let i = 0; i < 34 * 23; i++) {
+                    document.write('<div class="pixel" onclick="handlePixelClick(this)" data-index="' + i + '"></div>');
+                }
+            </script>
+        </div>
+        <div class="properties">
+            <div>Color: <span id="current-color" style="display:inline-block;width:20px;height:20px;background:#000;"></span></div>
+            <div id="canvas-size" onclick="openCanvasSizeModal()">Canvas Size: 34x23</div>
+            <div id="export">Export</div>
+            <div class="color-picker">
+                <!-- Add colors for the color picker -->
+                <script>
+                    const colors = [
+                        '#000000', '#FFFFFF', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF',
+                        '#800000', '#808000', '#008000', '#800080', '#808080', '#C0C0C0', '#FFA500', '#A52A2A',
+                        '#8B0000', '#A9A9A9', '#2F4F4F', '#00CED1', '#ADFF2F', '#DAA520', '#F0E68C', '#DDA0DD',
+                        '#F5DEB3', '#D2691E', '#8A2BE2', '#5F9EA0', '#7FFF00', '#D2691E', '#FF7F50', '#6495ED',
+                        '#DC143C', '#00FFFF', '#00008B', '#008B8B', '#B8860B', '#A9A9A9', '#006400', '#BDB76B'
+                    ];
+                    colors.forEach(color => {
+                        document.write('<div style="background:' + color + ';" onclick="selectColor(\'' + color + '\')"></div>');
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="stamp-modal">
+        <div class="modal-header">
+            <span>Choose a Stamp</span>
+            <button onclick="closeStampModal()">×</button>
+        </div>
+        <div class="stamps">
+            <div onclick="selectStamp('heart')">Heart</div>
+            <div onclick="selectStamp('star')">Star</div>
+            <div onclick="selectStamp('smiley')">Smiley</div>
+            <div onclick="selectStamp('flower')">Flower</div>
+        </div>
+    </div>
+
+    <div class="modal" id="create-stamp-modal">
+        <div class="modal-header">
+            <span>Create New Stamp</span>
+            <button onclick="closeCreateStampModal()">×</button>
+        </div>
+        <div class="create-stamp-grid" id="create-stamp-grid">
+            <!-- Generate 7x7 grid for creating new stamp -->
+            <script>
+                for (let i = 0; i < 7 * 7; i++) {
+                    document.write('<div class="pixel" onclick="toggleCreateStampPixel(this)" data-index="' + i + '"></div>');
+                }
+            </script>
+        </div>
+        <input type="text" id="stamp-name" placeholder="Stamp Name">
+        <button onclick="saveStamp()">Save Stamp</button>
+        <button onclick="closeCreateStampModal()">Cancel</button>
+    </div>
+
+    <div class="modal" id="canvas-size-modal">
+        <div class="modal-header">
+            <span>Change Canvas Size</span>
+            <button onclick="closeCanvasSizeModal()">×</button>
+        </div>
+        <div>
+            <label for="canvas-width">Width:</label>
+            <input type="number" id="canvas-width" value="34" min="1" max="100">
+        </div>
+        <div>
+            <label for="canvas-height">Height:</label>
+            <input type="number" id="canvas-height" value="23" min="1" max="100">
+        </div>
+        <button onclick="changeCanvasSize()">Change</button>
+    </div>
+
+    <div class="footer">
+        brought to you by: <span class="highlighted-text">hash.magic🧝‍♂️</span>
+    </div>
+
+    <script>
+        let currentTool = 'draw';
+        let currentColor = '#000';
+        let currentStamp = null;
+        let customStamps = {};
+
+        const stamps = {
+            heart: [
+                '  1 1  ',
+                ' 11111 ',
+                '1111111',
+                '1111111',
+                ' 11111 ',
+                '  111  ',
+                '   1   '
+            ],
+            star: [
+                '   1   ',
+                '   1   ',
+                '  111  ',
+                '1111111',
+                '  111  ',
+                '   1   ',
+                '   1   '
+            ],
+            smiley: [
+                ' 11111 ',
+                '1     1',
+                '1 1 1 1',
+                '1     1',
+                '1 111 1',
+                ' 1   1 ',
+                '  111  '
+            ],
+            flower: [
+                '  1 1  ',
+                ' 11111 ',
+                '1111111',
+                '1111111',
+                ' 11111 ',
+                '  111  ',
+                '   1   '
+            ]
+        };
+
+        document.querySelectorAll('.tools div').forEach(tool => {
+            tool.addEventListener('click', () => {
+                document.querySelectorAll('.tools div').forEach(t => t.classList.remove('active'));
+                tool.classList.add('active');
+                currentTool = tool.id;
+                if (currentTool === 'new') {
+                    resetCanvas();
+                } else if (currentTool === 'stamp') {
+                    openStampModal();
+                } else if (currentTool === 'create') {
+                    openCreateStampModal();
+                }
+            });
+        });
+
+        function handlePixelClick(pixel) {
+            const index = pixel.dataset.index;
+            if (currentTool === 'draw') {
+                pixel.style.backgroundColor = currentColor;
+            } else if (currentTool === 'erase') {
+                pixel.style.backgroundColor = '#888';
+            } else if (currentTool === 'fill') {
+                fillArea(index);
+            } else if (currentTool === 'stamp' && currentStamp) {
+                applyStamp(index);
+            }
+        }
+
+        function selectColor(color) {
+            currentColor = color;
+            document.getElementById('current-color').style.backgroundColor = color;
+            document.querySelectorAll('.color-picker div').forEach(c => c.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+
+        function fillArea(index) {
+            const grid = document.getElementById('pixel-grid');
+            const pixels = Array.from(grid.children);
+            const targetColor = pixels[index].style.backgroundColor;
+            const fillColor = currentColor;
+
+            if (targetColor === fillColor) return;
+
+            function floodFill(i) {
+                if (i < 0 || i >= pixels.length) return;
+                if (pixels[i].style.backgroundColor !== targetColor) return;
+
+                pixels[i].style.backgroundColor = fillColor;
+
+                const cols = parseInt(grid.style.gridTemplateColumns.split(' ').length);
+                const row = Math.floor(i / cols);
+                const col = i % cols;
+
+                if (col > 0) floodFill(i - 1);
+                if (col < cols - 1) floodFill(i + 1);
+                if (row > 0) floodFill(i - cols);
+                if (row < parseInt(grid.style.gridTemplateRows.split(' ').length) - 1) floodFill(i + cols);
+            }
+
+            floodFill(index);
+        }
+
+        function resetCanvas() {
+            const grid = document.getElementById('pixel-grid');
+            const pixels = Array.from(grid.children);
+            pixels.forEach(pixel => {
+                pixel.style.backgroundColor = '#888';
+            });
+        }
+
+        function openStampModal() {
+            document.getElementById('stamp-modal').style.display = 'flex';
+        }
+
+        function closeStampModal() {
+            document.getElementById('stamp-modal').style.display = 'none';
+        }
+
+        function selectStamp(stamp) {
+            currentStamp = stamps[stamp] || customStamps[stamp];
+            closeStampModal();
+        }
+
+        function applyStamp(index) {
+            const grid = document.getElementById('pixel-grid');
+            const pixels = Array.from(grid.children);
+            const cols = parseInt(grid.style.gridTemplateColumns.split(' ').length);
+            const startRow = Math.floor(index / cols);
+            const startCol = index % cols;
+
+            currentStamp.forEach((row, r) => {
+                [...row].forEach((cell, c) => {
+                    if (cell === '1') {
+                        const pixelIndex = (startRow + r) * cols + (startCol + c);
+                        if (pixelIndex >= 0 && pixelIndex < pixels.length) {
+                            pixels[pixelIndex].style.backgroundColor = currentColor;
+                        }
+                    }
+                });
+            });
+        }
+
+        function openCreateStampModal() {
+            document.getElementById('create-stamp-modal').style.display = 'flex';
+        }
+
+        function closeCreateStampModal() {
+            document.getElementById('create-stamp-modal').style.display = 'none';
+        }
+
+        function toggleCreateStampPixel(pixel) {
+            if (pixel.style.backgroundColor === 'black') {
+                pixel.style.backgroundColor = '#888';
+            } else {
+                pixel.style.backgroundColor = 'black';
+            }
+        }
+
+        function saveStamp() {
+            const name = document.getElementById('stamp-name').value.trim();
+            if (!name) {
+                alert('Please enter a name for your stamp.');
+                return;
+            }
+
+            const grid = document.getElementById('create-stamp-grid');
+            const pixels = Array.from(grid.children);
+            let stampPattern = [];
+
+            for (let r = 0; r < 7; r++) {
+                let rowPattern = '';
+                for (let c = 0; c < 7; c++) {
+                    const pixel = pixels[r * 7 + c];
+                    rowPattern += pixel.style.backgroundColor === 'black' ? '1' : ' ';
+                }
+                stampPattern.push(rowPattern);
+            }
+
+            customStamps[name] = stampPattern;
+            closeCreateStampModal();
+        }
+
+        function openCanvasSizeModal() {
+            document.getElementById('canvas-size-modal').style.display = 'flex';
+        }
+
+        function closeCanvasSizeModal() {
+            document.getElementById('canvas-size-modal').style.display = 'none';
+        }
+
+        function changeCanvasSize() {
+            const width = parseInt(document.getElementById('canvas-width').value);
+            const height = parseInt(document.getElementById('canvas-height').value);
+
+            if (width <= 0 || height <= 0) {
+                alert('Please enter valid dimensions.');
+                return;
+            }
+
+            const grid = document.getElementById('pixel-grid');
+            grid.style.gridTemplateColumns = `repeat(${width}, 20px)`;
+            grid.style.gridTemplateRows = `repeat(${height}, 20px)`;
+
+            while (grid.firstChild) {
+                grid.removeChild(grid.firstChild);
+            }
+
+            for (let i = 0; i < width * height; i++) {
+                const pixel = document.createElement('div');
+                pixel.className = 'pixel';
+                pixel.setAttribute('data-index', i);
+                pixel.onclick = () => handlePixelClick(pixel);
+                grid.appendChild(pixel);
+            }
+
+            document.getElementById('canvas-size').innerText = `Canvas Size: ${width}x${height}`;
+            closeCanvasSizeModal();
+        }
+
+        document.getElementById('export').addEventListener('click', () => {
+            const grid = document.getElementById('pixel-grid');
+            const width = parseInt(grid.style.gridTemplateColumns.split(' ').length);
+            const height = parseInt(grid.style.gridTemplateRows.split(' ').length);
+            const canvas = document.createElement('canvas');
+            canvas.width = width * 22; // pixel size 20 minus 2px gap
+            canvas.height = height * 22;
+            const ctx = canvas.getContext('2d');
+            const pixels = Array.from(grid.children);
+
+            pixels.forEach((pixel, i) => {
+                const col = i % width;
+                const row = Math.floor(i / width);
+                ctx.fillStyle = pixel.style.backgroundColor;
+                ctx.fillRect(col * 22, row * 22, 20, 20);
+            });
+
+            const link = document.createElement('a');
+            link.download = 'pixel-art.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    </script>
+</body>
+</html>

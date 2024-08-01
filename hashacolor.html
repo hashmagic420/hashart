@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash-A-Color</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #E64A19; /* Light/Burnt Orange */
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: #f0f0f3;
+            box-shadow: 9px 9px 16px #d1cdc7, -9px -9px 16px #ffffff;
+            border-radius: 20px;
+        }
+
+        h1 {
+            margin-bottom: 40px;
+            font-size: 2em;
+            color: #FFF;
+        }
+
+        .color-box {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            background: #ffffff;
+            box-shadow: inset 9px 9px 16px #d1cdc7, inset -9px -9px 16px #ffffff;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        button {
+            background: #f0f0f3;
+            box-shadow: 9px 9px 16px #d1cdc7, -9px -9px 16px #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            color: #333;
+        }
+
+        button:active {
+            box-shadow: inset 9px 9px 16px #d1cdc7, inset -9px -9px 16px #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hash-A-Color</h1>
+        <div class="color-box" id="colorBox">#FFFFFF</div>
+        <button id="generateColor">Generate Random Color</button>
+    </div>
+
+    <script>
+        document.getElementById('generateColor').addEventListener('click', function() {
+            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+            const colorBox = document.getElementById('colorBox');
+            colorBox.style.backgroundColor = randomColor;
+            colorBox.textContent = randomColor;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixelate Your Image</title>
+<style>
+body {
+    background-color: #E64A19;
+    font-family: 'Permanent Marker', cursive;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    padding: 20px;
+    color: #fff;
+}
+
+button {
+    display: block;
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: #000;
+    color: #fff;
+    box-shadow: 5px 5px 15px #c7c7c7, -5px -5px 15px #ffffff;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #333;
+}
+
+#canvas {
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    background-color: #FFF3E0;
+    box-shadow: 7px 7px 15px #c2c2c2, -7px -7px 15px #ffffff;
+    margin-top: 20px;
+}
+
+#credits {
+    font-size: 14px;
+    color: #ffcc66;
+    text-align: center;
+    margin-top: 20px;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+input[type="file"] + label {
+    display: block;
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #FFF3E0;
+    box-shadow: 5px 5px 15px #c7c7c7, -5px -5px 15px #ffffff;
+    color: #E64A19;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+input[type="file"] + label:hover {
+    background: #FBE9E7;
+}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+</head>
+<body>
+<input type="file" id="uploadSingleInput" accept="image/*">
+<label for="uploadSingleInput" id="uploadSingle">Upload Single Image</label>
+<input type="file" id="uploadBatchInput" accept="image/*" multiple>
+<label for="uploadBatchInput" id="uploadBatch">Upload Batch Images</label>
+<canvas id="canvas"></canvas>
+<div id="credits"><i>Made with:<strong>HASH.MAGIC🪄</strong></i></div>
+
+<script>
+document.getElementById('uploadSingleInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Set canvas size equal to image size
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Draw the image
+                ctx.drawImage(img, 0, 0);
+
+                // Pixelate the image
+                pixelate(ctx, img);
+            }
+            img.src = event.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('uploadBatchInput').addEventListener('change', function(e) {
+    const files = e.target.files;
+    if (files.length > 0) {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let currentImageIndex = 0;
+
+        function processNextImage() {
+            if (currentImageIndex >= files.length) {
+                return;
+            }
+
+            const file = files[currentImageIndex];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    // Set canvas size equal to image size
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+
+                    // Draw the image
+                    ctx.drawImage(img, 0, 0);
+
+                    // Pixelate the image
+                    pixelate(ctx, img);
+
+                    // Save the pixelated image
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL('image/webp');
+                    link.download = `pixelated_image_${currentImageIndex + 1}.webp`;
+                    link.click();
+
+                    // Move to the next image
+                    currentImageIndex++;
+                    processNextImage();
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        processNextImage();
+    }
+});
+
+function pixelate(ctx, img) {
+    const pixelSize = 10; // Size of each 'pixel' block
+
+    for (let y = 0; y < img.height; y += pixelSize) {
+        for (let x = 0; x < img.width; x += pixelSize) {
+            // Sample the color in the center of the block
+            const data = ctx.getImageData(x, y, 1, 1).data;
+            // Set the fill style to the sampled color
+            ctx.fillStyle = `rgba(${data[0]}, ${data[1]}, ${data[2]}, ${data[3] / 255})`;
+            // Draw a rectangle with the color
+            ctx.fillRect(x, y, pixelSize, pixelSize);
+        }
+    }
+}
+</script>
+</body>
+</html>

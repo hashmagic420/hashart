@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typography Playground</title>
+  <style>
+    body {
+      background-color: #E64A19;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header, footer {
+      width: 100%;
+      padding: 1em;
+      background-color: rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      width: 80%;
+      margin: 2em 0;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 20px 20px 60px #b54115, -20px -20px 60px #ff5323;
+      padding: 2em;
+      color: black;
+    }
+    .sidebar {
+      width: 100%;
+      padding: 1em;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: inset 10px 10px 20px #b54115, inset -10px -10px 20px #ff5323;
+      margin-bottom: 2em;
+      color: black;
+    }
+    .content {
+      width: 100%;
+      padding: 1em;
+    }
+    .setting {
+      margin-bottom: 1em;
+    }
+    .setting label {
+      display: block;
+      margin-bottom: 0.5em;
+    }
+    .setting input, .setting select {
+      width: 100%;
+      padding: 0.5em;
+      border: none;
+      border-radius: 8px;
+      box-shadow: inset 5px 5px 10px #b54115, inset -5px -5px 10px #ff5323;
+      background: #fff;
+      color: black;
+    }
+    .preview {
+      padding: 2em;
+      background: white;
+      color: black;
+      border-radius: 12px;
+      box-shadow: 10px 10px 20px #b54115, -10px -10px 20px #ff5323;
+    }
+    @media (min-width: 768px) {
+      .container {
+        flex-direction: row;
+      }
+      .sidebar, .content {
+        width: 50%;
+        margin-bottom: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Typography Playground</h1>
+  </header>
+  <div class="container">
+    <div class="sidebar">
+      <!-- Font Selection -->
+      <div class="setting">
+        <label for="fontSelect">Font</label>
+        <select id="fontSelect">
+          <option value="Arial">Arial</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Palatino">Palatino</option>
+          <option value="Garamond">Garamond</option>
+          <option value="Bookman">Bookman</option>
+          <option value="Comic Sans MS">Comic Sans MS</option>
+          <option value="Trebuchet MS">Trebuchet MS</option>
+          <option value="Arial Black">Arial Black</option>
+          <option value="Impact">Impact</option>
+          <option value="Lucida Sans Unicode">Lucida Sans Unicode</option>
+          <option value="Tahoma">Tahoma</option>
+          <option value="Geneva">Geneva</option>
+          <option value="Sans-serif">Sans-serif</option>
+          <option value="Monospace">Monospace</option>
+          <option value="Gill Sans">Gill Sans</option>
+          <option value="Helvetica">Helvetica</option>
+          <option value="Century Gothic">Century Gothic</option>
+          <option value="Franklin Gothic Medium">Franklin Gothic Medium</option>
+          <option value="Brush Script MT">Brush Script MT</option>
+          <option value="Lucida Console">Lucida Console</option>
+          <option value="Consolas">Consolas</option>
+          <option value="Copperplate">Copperplate</option>
+          <option value="Papyrus">Papyrus</option>
+          <option value="Courier">Courier</option>
+          <option value="Optima">Optima</option>
+          <option value="Futura">Futura</option>
+          <option value="Baskerville">Baskerville</option>
+          <option value="Bodoni MT">Bodoni MT</option>
+          <option value="Didot">Didot</option>
+          <option value="Rockwell">Rockwell</option>
+          <option value="Goudy Old Style">Goudy Old Style</option>
+          <option value="Herculanum">Herculanum</option>
+          <option value="Chalkduster">Chalkduster</option>
+          <option value="Marker Felt">Marker Felt</option>
+          <option value="Euphemia UCAS">Euphemia UCAS</option>
+          <option value="Savoye LET">Savoye LET</option>
+          <option value="Stencil">Stencil</option>
+          <option value="Trattatello">Trattatello</option>
+          <option value="Hoefler Text">Hoefler Text</option>
+          <option value="American Typewriter">American Typewriter</option>
+          <option value="Avenir">Avenir</option>
+          <option value="Avenir Next">Avenir Next</option>
+          <option value="Baskerville">Baskerville</option>
+          <option value="Big Caslon">Big Caslon</option>
+          <option value="Bodoni 72">Bodoni 72</option>
+          <option value="Bradley Hand">Bradley Hand</option>
+          <option value="Chalkboard SE">Chalkboard SE</option>
+          <option value="Cochin">Cochin</option>
+          <option value="Damascus">Damascus</option>
+          <option value="Didot">Didot</option>
+          <option value="Farah">Farah</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Iowan Old Style">Iowan Old Style</option>
+          <option value="Kailasa">Kailasa</option>
+          <option value="Kefa">Kefa</option>
+          <option value="Khmer Sangam MN">Khmer Sangam MN</option>
+          <option value="Kohinoor Bangla">Kohinoor Bangla</option>
+          <option value="Kohinoor Devanagari">Kohinoor Devanagari</option>
+          <option value="Kohinoor Telugu">Kohinoor Telugu</option>
+          <option value="Menlo">Menlo</option>
+          <option value="Mishafi">Mishafi</option>
+          <option value="Mukta Mahee">Mukta Mahee</option>
+          <option value="Myanmar Sangam MN">Myanmar Sangam MN</option>
+          <option value="Noteworthy">Noteworthy</option>
+          <option value="Noto Sans">Noto Sans</option>
+          <option value="Noto Serif">Noto Serif</option>
+          <option value="Oriya Sangam MN">Oriya Sangam MN</option>
+          <option value="Palatino">Palatino</option>
+          <option value="Party LET">Party LET</option>
+          <option value="PingFang HK">PingFang HK</option>
+          <option value="PingFang SC">PingFang SC</option>
+          <option value="PingFang TC">PingFang TC</option>
+          <option value="PT Serif">PT Serif</option>
+          <option value="Sinhala Sangam MN">Sinhala Sangam MN</option>
+          <option value="Snell Roundhand">Snell Roundhand</option>
+          <option value="Thonburi">Thonburi</option>
+          <option value="Times">Times</option>
+          <option value="Verdana">Verdana</option>
+          <option value="Zapfino">Zapfino</option>
+          <!-- Add more font options if needed -->
+        </select>
+      </div>
+      <!-- Other settings here -->
+      <div class="setting">
+        <label for="fontSize">Font Size</label>
+        <input type="range" id="fontSize" min="10" max="72" value="16">
+      </div>
+      <div class="setting">
+        <label for="lineHeight">Line Height</label>
+        <input type="range" id="lineHeight" min="1" max="3" step="0.1" value="1.5">
+      </div>
+      <div class="setting">
+        <label for="letterSpacing">Letter Spacing</label>
+        <input type="range" id="letterSpacing" min="0" max="10" value="0">
+      </div>
+      <div class="setting">
+        <label for="textColor">Text Color</label>
+        <input type="color" id="textColor" value="#000000">
+      </div>
+    </div>
+    <div class="content">
+      <textarea id="textInput" rows="5" placeholder="Enter your text here..."></textarea>
+      <div class="preview" id="preview">
+        <!-- Live preview -->
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p>hash.art 2023 &copy;</p>
+  </footer>
+  <script>
+    const fontSelect = document.getElementById('fontSelect');
+    const fontSize = document.getElementById('fontSize');
+    const lineHeight = document.getElementById('lineHeight');
+    const letterSpacing = document.getElementById('letterSpacing');
+    const textColor = document.getElementById('textColor');
+    const textInput = document.getElementById('textInput');
+    const preview = document.getElementById('preview');
+
+    function updatePreview() {
+      preview.style.fontFamily = fontSelect.value;
+      preview.style.fontSize = fontSize.value + 'px';
+      preview.style.lineHeight = lineHeight.value;
+      preview.style.letterSpacing = letterSpacing.value + 'px';
+      preview.style.color = textColor.value;
+      preview.textContent = textInput.value;
+    }
+
+    fontSelect.addEventListener('change', updatePreview);
+    fontSize.addEventListener('input', updatePreview);
+    lineHeight.addEventListener('input', updatePreview);
+    letterSpacing.addEventListener('input', updatePreview);
+    textColor.addEventListener('input', updatePreview);
+    textInput.addEventListener('input', updatePreview);
+
+    // Initial update
+    updatePreview();
+  </script>
+</body>
+</html>

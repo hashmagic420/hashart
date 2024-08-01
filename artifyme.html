@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Self-Portraits</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #E64A19; /* Burnt orange background */
+            text-align: center;
+            color: #333;
+        }
+
+        h1 {
+            font-family: 'Pacifico', cursive;
+            font-weight: bold;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        p {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        label, button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #fff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 9px 9px 16px #c1441a, -9px -9px 16px #ff521e;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        label:hover, button:hover {
+            box-shadow: 3px 3px 6px #c1441a, -3px -3px 6px #ff521e;
+        }
+
+        canvas, video {
+            border-radius: 12px;
+            margin-top: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 9px 9px 16px #c1441a, -9px -9px 16px #ff521e;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #fff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 9px 9px 16px #c1441a, -9px -9px 16px #ff521e;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        button:hover {
+            box-shadow: 3px 3px 6px #c1441a, -3px -3px 6px #ff521e;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Transform Your Face into a Masterpiece</h1>
+    <p>Looking to turn your face into a work of abstract art? Choose an art style below:</p>
+
+    <input type="file" id="upload" accept="image/*">
+    <label for="upload">Upload Image</label>
+    <button id="capture">Capture with Camera</button>
+    <video id="video" width="500" height="500" autoplay style="display: none;"></video>
+    <button id="takePhoto" style="display: none;">Take Photo</button>
+    <canvas id="canvas" width="500" height="500"></canvas>
+
+    <div class="controls">
+        <button onclick="applyCubist()">The Cubist Selfie</button>
+        <button onclick="applySurreal()">The Surreal Self-Portrait</button>
+        <button onclick="applyImpressionist()">The Impressionist Selfie</button>
+        <button onclick="applyPopArt()">The Pop Art Selfie</button>
+        <button onclick="applyAbstract()">The Abstract Expressionist Selfie</button>
+    </div>
+
+    <script>
+        const upload = document.getElementById('upload');
+        const capture = document.getElementById('capture');
+        const video = document.getElementById('video');
+        const takePhoto = document.getElementById('takePhoto');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        upload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        capture.addEventListener('click', () => {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then((stream) => {
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    takePhoto.style.display = 'inline';
+                })
+                .catch((err) => {
+                    console.error('Error accessing camera: ', err);
+                });
+        });
+
+        takePhoto.addEventListener('click', () => {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            video.style.display = 'none';
+            takePhoto.style.display = 'none';
+            video.srcObject.getTracks().forEach(track => track.stop());
+        });
+
+        function applyCubist() {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            for (let y = 0; y < canvas.height; y += 10) {
+                for (let x = 0; x < canvas.width; x += 10) {
+                    const red = imageData.data[((y * 4) * imageData.width) + (x * 4)];
+                    const green = imageData.data[((y * 4) * imageData.width) + (x * 4) + 1];
+                    const blue = imageData.data[((y * 4) * imageData.width) + (x * 4) + 2];
+                    ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+                    ctx.fillRect(x, y, 10, 10);
+                }
+            }
+        }
+
+        function applySurreal() {
+            for (let i = 0; i < 10; i++) {
+                ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.5)`;
+                ctx.beginPath();
+                ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 50, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function applyImpressionist() {
+            ctx.filter = 'blur(5px)';
+            ctx.drawImage(canvas, 0, 0);
+            ctx.filter = 'none';
+        }
+
+        function applyPopArt() {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < imageData.data.length; i += 4) {
+                const avg = (imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / 3;
+                if (avg > 128) {
+                    imageData.data[i] = 255;     // Red
+                    imageData.data[i + 1] = 255; // Green
+                    imageData.data[i + 2] = 0;   // Blue
+                } else {
+                    imageData.data[i] = 0;
+                    imageData.data[i + 1] = 0;
+                    imageData.data[i + 2] = 0;
+                }
+            }
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function applyAbstract() {
+            for (let i = 0; i < 100; i++) {
+                ctx.strokeStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.5)`;
+                ctx.lineWidth = Math.random() * 5;
+                ctx.beginPath();
+                ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                ctx.stroke();
+            }
+        }
+    </script>
+</body>
+</html>

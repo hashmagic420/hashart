@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash-A-Beat</title>
+    <style>
+        body {
+            background-color: #E64A19; /* Burnt Orange */
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff; /* White for neuromorphic design */
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 20px 20px 60px #c1441a, -20px -20px 60px #ff521e;
+            text-align: center;
+            color: #1e1e2e;
+        }
+        .beat-display {
+            background-color: #fff; /* White */
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 20px;
+            box-shadow: inset 5px 5px 10px #c1441a, inset -5px -5px 10px #ff521e;
+            color: #1e1e2e;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .controls button {
+            background-color: #000; /* Black */
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 5px;
+            box-shadow: 5px 5px 10px #c1441a, -5px -5px 10px #ff521e;
+        }
+        .controls button:hover {
+            background-color: #444; /* Dark Grey */
+        }
+        .controls select,
+        .controls input[type="range"],
+        .controls input[type="checkbox"] {
+            margin: 5px;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #444; /* Dark Grey */
+            box-shadow: inset 5px 5px 10px #c1441a, inset -5px -5px 10px #ff521e;
+        }
+        .keys {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 10px;
+        }
+        .key {
+            background-color: #555; /* Grey */
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            text-align: center;
+            color: white;
+            box-shadow: 5px 5px 10px #c1441a, -5px -5px 10px #ff521e;
+        }
+        .key.active {
+            background-color: #fff; /* White */
+            color: #000; /* Black */
+        }
+        .key:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hash-A-Beat</h1>
+        <div class="beat-display" id="beat-display">C3 D3 E3 F3 G3 A3 B3</div>
+        <div class="controls">
+            <button id="clear">Clear</button>
+            <select id="shape">
+                <option value="square">Square</option>
+                <option value="sine">Sine</option>
+                <option value="sawtooth">Sawtooth</option>
+                <option value="triangle">Triangle</option>
+                <option value="8bit">8-Bit</option>
+                <option value="fm">FM-Bass</option>
+                <option value="pad">Synth Pad</option>
+                <option value="pluck">Pluck</option>
+            </select>
+            <input type="range" id="speed" min="1" max="10" value="5">
+            <label for="loop">Loop</label>
+            <input type="checkbox" id="loop">
+            <button id="play">Play</button>
+            <button id="download">Download</button>
+            <div>
+                <button id="octave-down">-</button>
+                <span id="octave-display">Octave: 3</span>
+                <button id="octave-up">+</button>
+            </div>
+        </div>
+        <div class="keys">
+            <div class="key" data-note="C">C</div>
+            <div class="key" data-note="D">D</div>
+            <div class="key" data-note="E">E</div>
+            <div class="key" data-note="F">F</div>
+            <div class="key" data-note="G">G</div>
+            <div class="key" data-note="A">A</div>
+            <div class="key" data-note="B">B</div>
+            <div class="key" data-note="C#">C#</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.27/Tone.js"></script>
+    <script>
+        const beatDisplay = document.getElementById('beat-display');
+        const clearButton = document.getElementById('clear');
+        const playButton = document.getElementById('play');
+        const downloadButton = document.getElementById('download');
+        const keys = document.querySelectorAll('.key');
+        const speedControl = document.getElementById('speed');
+        const loopControl = document.getElementById('loop');
+        const shapeSelect = document.getElementById('shape');
+        const octaveDownButton = document.getElementById('octave-down');
+        const octaveUpButton = document.getElementById('octave-up');
+        const octaveDisplay = document.getElementById('octave-display');
+
+        let currentOctave = 3;
+        let recorder;
+        let recording = false;
+        let recordedChunks = [];
+
+        let synth = new Tone.Synth().toDestination();
+
+        function updateSynthType(type) {
+            if (synth) {
+                synth.dispose();
+            }
+
+            switch (type) {
+                case 'sine':
+                case 'square':
+                case 'sawtooth':
+                case 'triangle':
+                    synth = new Tone.Synth({ oscillator: { type } }).toDestination();
+                    break;
+                case '8bit':
+                    synth = new Tone.Synth({ oscillator: { type: 'square' }, envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.9 } }).toDestination();
+                    break;
+                case 'fm':
+                    synth = new Tone.FMSynth().toDestination();
+                    break;
+                case 'pad':
+                    synth = new Tone.PolySynth().toDestination();
+                    break;
+                case 'pluck':
+                    synth = new Tone.PluckSynth().toDestination();
+                    break;
+                default:
+                    synth = new Tone.Synth().toDestination();
+                    break;
+            }
+
+            synth.connect(destination);
+        }
+
+        shapeSelect.addEventListener('change', (event) => {
+            updateSynthType(event.target.value);
+        });
+
+        keys.forEach(key => {
+            key.addEventListener('click', () => {
+                key.classList.toggle('active');
+                updateBeatDisplay();
+            });
+        });
+
+        clearButton.addEventListener('click', () => {
+            keys.forEach(key => key.classList.remove('active'));
+            updateBeatDisplay();
+        });
+
+        octaveDownButton.addEventListener('click', () => {
+            if (currentOctave > 1) {
+                currentOctave--;
+                octaveDisplay.textContent = `Octave: ${currentOctave}`;
+                updateBeatDisplay();
+            }
+        });
+
+        octaveUpButton.addEventListener('click', () => {
+            if (currentOctave < 8) {
+                currentOctave++;
+                octaveDisplay.textContent = `Octave: ${currentOctave}`;
+                updateBeatDisplay();
+            }
+        });
+
+        function updateBeatDisplay() {
+            const activeKeys = Array.from(keys)
+                .filter(key => key.classList.contains('active'))
+                .map(key => `${key.dataset.note}${currentOctave}`);
+            beatDisplay.textContent = activeKeys.join(' ');
+        }
+
+        playButton.addEventListener('click', async () => {
+            await Tone.start();
+            const activeKeys = Array.from(keys)
+                .filter(key => key.classList.contains('active'))
+                .map(key => `${key.dataset.note}${currentOctave}`);
+
+            let index = 0;
+            const loop = new Tone.Loop(time => {
+                if (index >= activeKeys.length) {
+                    index = 0;
+                    if (!loopControl.checked) {
+                        loop.stop();
+                        if (recording) {
+                            Tone.Transport.stop();
+                            recorder.stop();
+                        }
+                        return;
+                    }
+                }
+                synth.triggerAttackRelease(activeKeys[index], '8n', time);
+                index++;
+            }, `${10 - speedControl.value}n`).start(0);
+
+            if (recording) {
+                recorder.start();
+            }
+
+            Tone.Transport.start();
+        });
+
+        // Initialize MediaRecorder for recording
+        const context = Tone.context;
+        const destination = context.createMediaStreamDestination();
+        synth.connect(destination);
+        recorder = new MediaRecorder(destination.stream);
+
+        recorder.ondataavailable = event => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        recorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'audio/wav' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            document.body.appendChild(a);
+            a.style = 'display: none';
+            a.href = url;
+            a.download = '8-beats.wav';
+            a.click();
+            window.URL.revokeObjectURL(url);
+            recordedChunks = [];
+        };
+
+        downloadButton.addEventListener('click', () => {
+            recording = true;
+            playButton.click();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash-A-Stencil</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #E64A19;
+            color: #000;
+        }
+        header {
+            background-color: #E64A19;
+            color: white;
+            padding: 1em;
+            text-align: center;
+            box-shadow: 8px 8px 16px #c1441a, -8px -8px 16px #ff521e;
+        }
+        main {
+            padding: 2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+            flex-direction: column;
+        }
+        #stencil-maker-app {
+            border: 1px solid #ccc;
+            padding: 2em;
+            border-radius: 15px;
+            box-shadow: 8px 8px 16px #c1441a, -8px -8px 16px #ff521e;
+            background-color: #fff;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        form div {
+            margin-bottom: 1em;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5em;
+        }
+        input[type="file"], input[type="number"] {
+            width: 100%;
+            padding: 0.5em;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            box-shadow: inset 4px 4px 8px #c1441a, inset -4px -4px 8px #ff521e;
+            background-color: #fff;
+            color: #000;
+        }
+        button {
+            padding: 0.5em 2em;
+            border: none;
+            border-radius: 10px;
+            background-color: #E64A19;
+            color: #fff;
+            box-shadow: 4px 4px 8px #c1441a, -4px -4px 8px #ff521e;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #d33b17;
+        }
+        canvas {
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 4px 4px 8px #c1441a, -4px -4px 8px #ff521e;
+            background-color: #fff;
+            color: #000;
+            margin-top: 1em;
+        }
+        svg {
+            margin-top: 1em;
+            display: block;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Hash-A-Stencil</h1>
+    </header>
+    <main>
+        <div id="stencil-maker-app">
+            <h2>Create a Stencil</h2>
+            <form id="stencil-form">
+                <div>
+                    <label for="image-upload">Upload an Image:</label>
+                    <input type="file" id="image-upload" accept="image/*">
+                </div>
+                <div>
+                    <label for="stencil-width">Stencil Width (px):</label>
+                    <input type="number" id="stencil-width" value="400" min="1">
+                </div>
+                <div>
+                    <label for="stencil-height">Stencil Height (px):</label>
+                    <input type="number" id="stencil-height" value="400" min="1">
+                </div>
+                <button type="submit">Create Stencil</button>
+            </form>
+            <button id="download-button" style="display:none;">Download Stencil</button>
+            <canvas id="canvas" width="400" height="400"></canvas>
+        </div>
+    </main>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById('stencil-form');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const downloadButton = document.getElementById('download-button');
+            const stencilWidth = document.getElementById('stencil-width');
+            const stencilHeight = document.getElementById('stencil-height');
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const width = parseInt(stencilWidth.value);
+                const height = parseInt(stencilHeight.value);
+                canvas.width = width;
+                canvas.height = height;
+            });
+
+            document.getElementById('image-upload').addEventListener('change', handleImageUpload);
+
+            downloadButton.addEventListener('click', () => {
+                const link = document.createElement('a');
+                link.download = 'stencil.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+
+            function handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.onload = function() {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            ctx.drawImage(img, 0, 0);
+                            applyEdgeDetection();
+                        }
+                        img.src = e.target.result;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            function applyEdgeDetection() {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+                const width = imageData.width;
+                const height = imageData.height;
+
+                const gray = new Uint8ClampedArray(width * height);
+
+                // Convert to grayscale
+                for (let i = 0; i < data.length; i += 4) {
+                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    gray[i / 4] = avg;
+                }
+
+                // Apply edge detection
+                const edgeData = new Uint8ClampedArray(data.length);
+                applySobelFilter(gray, width, height, edgeData);
+
+                ctx.putImageData(new ImageData(edgeData, width, height), 0, 0);
+                downloadButton.style.display = 'inline-block';
+            }
+
+            function applySobelFilter(gray, width, height, edgeData) {
+                const sobelX = [
+                    [-1, 0, 1],
+                    [-2, 0, 2],
+                    [-1, 0, 1]
+                ];
+                const sobelY = [
+                    [-1, -2, -1],
+                    [0, 0, 0],
+                    [1, 2, 1]
+                ];
+
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        let pixelX = 0;
+                        let pixelY = 0;
+
+                        for (let ky = -1; ky <= 1; ky++) {
+                            for (let kx = -1; kx <= 1; kx++) {
+                                const pixel = gray[(y + ky) * width + (x + kx)];
+                                pixelX += pixel * sobelX[ky + 1][kx + 1];
+                                pixelY += pixel * sobelY[ky + 1][kx + 1];
+                            }
+                        }
+
+                        const magnitude = Math.sqrt(pixelX * pixelX + pixelY * pixelY);
+                        const index = (y * width + x) * 4;
+                        edgeData[index] = edgeData[index + 1] = edgeData[index + 2] = magnitude > 128 ? 255 : 0;
+                        edgeData[index + 3] = 255;
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Converting & Resizing App</title>
+    <style>
+        body {
+            background-color: #E64A19;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .app-container {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 20px 20px 60px #b23b17, -20px -20px 60px #ff5321;
+            padding: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #000000;
+            margin-bottom: 20px;
+        }
+        input, select, button, .slider-container {
+            display: block;
+            width: calc(100% - 40px);
+            margin: 10px auto;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            box-shadow: inset 5px 5px 10px #b3b3b3, inset -5px -5px 10px #ffffff;
+            font-size: 16px;
+        }
+        button {
+            background-color: #000000;
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 5px 5px 10px #b23b17, -5px -5px 10px #ff5321;
+        }
+        button:hover {
+            background-color: #333333;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .slider {
+            width: 80%;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1>Converting & Resizing App</h1>
+        <input type="file" id="fileInput" />
+        <select id="formatSelect">
+            <option value="image/jpeg">JPEG</option>
+            <option value="image/png">PNG</option>
+            <option value="image/webp">WEBP</option>
+            <option value="image/gif">GIF</option>
+            <option value="raw">RAW</option>
+            <option value="pdf">PDF</option>
+        </select>
+        <input type="number" id="widthInput" placeholder="Width" />
+        <input type="number" id="heightInput" placeholder="Height" />
+        <div class="slider-container">
+            <label for="compressionSlider">Compression: </label>
+            <input type="range" id="compressionSlider" class="slider" min="0" max="100" value="100" />
+            <span id="compressionValue">100%</span>
+        </div>
+        <button id="convertButton">Convert & Download</button>
+    </div>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/raw.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script>
+        document.getElementById('compressionSlider').addEventListener('input', function() {
+            document.getElementById('compressionValue').innerText = this.value + '%';
+        });
+
+        document.getElementById('convertButton').addEventListener('click', () => {
+            const fileInput = document.getElementById('fileInput');
+            const formatSelect = document.getElementById('formatSelect');
+            const widthInput = document.getElementById('widthInput');
+            const heightInput = document.getElementById('heightInput');
+            const compressionSlider = document.getElementById('compressionSlider');
+
+            if (!fileInput.files.length) {
+                alert('Please select a file to convert.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const format = formatSelect.value;
+            const width = widthInput.value;
+            const height = heightInput.value;
+            const quality = compressionSlider.value / 100;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const scaleWidth = width ? parseInt(width) : img.width;
+                    const scaleHeight = height ? parseInt(height) : img.height;
+                    canvas.width = scaleWidth;
+                    canvas.height = scaleHeight;
+                    ctx.drawImage(img, 0, 0, scaleWidth, scaleHeight);
+                    
+                    if (format === 'image/gif') {
+                        const gif = new GIF({
+                            workers: 2,
+                            quality: 10
+                        });
+                        gif.addFrame(canvas, {delay: 200});
+                        gif.on('finished', function(blob) {
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.setAttribute('download', 'converted.gif');
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        });
+                        gif.render();
+                    } else if (format === 'raw') {
+                        rawjs.decode(event.target.result, (err, data) => {
+                            if (err) {
+                                alert('Failed to decode RAW file');
+                                return;
+                            }
+                            const rawCanvas = document.createElement('canvas');
+                            const rawCtx = rawCanvas.getContext('2d');
+                            rawCanvas.width = data.width;
+                            rawCanvas.height = data.height;
+                            const imageData = rawCtx.createImageData(data.width, data.height);
+                            imageData.data.set(data.data);
+                            rawCtx.putImageData(imageData, 0, 0);
+                            rawCanvas.toBlob(function(blob) {
+                                const url = window.URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.setAttribute('download', 'converted.png');
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                            }, 'image/png');
+                        });
+                    } else if (format === 'pdf') {
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF();
+                        pdf.addImage(canvas.toDataURL('image/jpeg', quality), 'JPEG', 10, 10, scaleWidth / 10, scaleHeight / 10);
+                        pdf.save('converted.pdf');
+                    } else {
+                        canvas.toBlob(function(blob) {
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.setAttribute('download', `converted.${format.split('/')[1]}`);
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        }, format, quality);
+                    }
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media to Base64</title>
+    <style>
+        body {
+            background-color: #E64A19;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            background: #E64A19;
+            border-radius: 20px;
+            box-shadow: 20px 20px 60px #b84314, -20px -20px 60px #ff511e;
+            padding: 20px;
+            text-align: center;
+            width: 300px;
+        }
+
+        h1 {
+            color: white;
+        }
+
+        input[type="file"], button, textarea, input[type="number"] {
+            display: block;
+            margin: 20px auto;
+        }
+
+        button {
+            background: #E64A19;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 5px 5px 15px #b84314, -5px -5px 15px #ff511e;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        button:active {
+            box-shadow: inset 5px 5px 15px #b84314, inset -5px -5px 15px #ff511e;
+        }
+
+        textarea {
+            background: white;
+            border: none;
+            border-radius: 10px;
+            box-shadow: inset 5px 5px 15px #b84314, inset -5px -5px 15px #ff511e;
+            padding: 10px;
+            width: 80%;
+            height: 80px;
+        }
+
+        #media-viewer {
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+            border: 2px solid white;
+            border-radius: 10px;
+        }
+
+        #dimension-inputs {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Media to Base64</h1>
+        <input type="file" id="upload" accept="image/*,audio/*,video/*">
+        <div id="dimension-inputs">
+            <input type="number" id="width" placeholder="Width" min="1" value="32">
+            <input type="number" id="height" placeholder="Height" min="1" value="32">
+        </div>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <img id="image-viewer" src="" alt="Your Media" style="display:none;">
+        <audio id="audio-viewer" controls style="display:none;"></audio>
+        <video id="video-viewer" controls style="display:none;"></video>
+        <button id="create-base64">Convert to Base64</button>
+        <textarea id="base64-output" readonly></textarea>
+        <button id="download-media">Download Media</button>
+    </div>
+    <script>
+        document.getElementById('upload').addEventListener('change', handleFileUpload);
+        document.getElementById('create-base64').addEventListener('click', createBase64);
+        document.getElementById('download-media').addEventListener('click', downloadMedia);
+
+        let fileType = '';
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            fileType = file.type.split('/')[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const result = event.target.result;
+
+                if (fileType === 'image') {
+                    document.getElementById('dimension-inputs').style.display = 'block';
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.getElementById('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const width = document.getElementById('width').value;
+                        const height = document.getElementById('height').value;
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        document.getElementById('image-viewer').src = result;
+                        document.getElementById('image-viewer').style.display = 'block';
+                        document.getElementById('audio-viewer').style.display = 'none';
+                        document.getElementById('video-viewer').style.display = 'none';
+                    }
+                    img.src = result;
+                } else if (fileType === 'audio') {
+                    document.getElementById('dimension-inputs').style.display = 'none';
+                    const audio = document.getElementById('audio-viewer');
+                    audio.src = result;
+                    audio.style.display = 'block';
+                    document.getElementById('image-viewer').style.display = 'none';
+                    document.getElementById('video-viewer').style.display = 'none';
+                } else if (fileType === 'video') {
+                    document.getElementById('dimension-inputs').style.display = 'none';
+                    const video = document.getElementById('video-viewer');
+                    video.src = result;
+                    video.style.display = 'block';
+                    document.getElementById('image-viewer').style.display = 'none';
+                    document.getElementById('audio-viewer').style.display = 'none';
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+
+        function createBase64() {
+            const canvas = document.getElementById('canvas');
+            let base64Data = '';
+
+            if (fileType === 'image') {
+                const width = document.getElementById('width').value;
+                const height = document.getElementById('height').value;
+                canvas.width = width;
+                canvas.height = height;
+                base64Data = canvas.toDataURL('image/png');
+            } else if (fileType === 'audio' || fileType === 'video') {
+                const mediaViewer = fileType === 'audio' ? document.getElementById('audio-viewer') : document.getElementById('video-viewer');
+                base64Data = mediaViewer.src;
+            }
+
+            document.getElementById('base64-output').value = base64Data;
+        }
+
+        function downloadMedia() {
+            const link = document.createElement('a');
+            link.href = document.getElementById('base64-output').value;
+
+            if (fileType === 'image') {
+                link.download = 'image.png';
+            } else if (fileType === 'audio') {
+                link.download = 'audio.mp3';
+            } else if (fileType === 'video') {
+                link.download = 'video.mp4';
+            }
+
+            link.click();
+        }
+    </script>
+</body>
+</html>

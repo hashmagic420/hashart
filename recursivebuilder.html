@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Doginals Recursive Builder</title>
+
+    <meta property="og:title" content="Doginals Recursive Builder">
+    <meta property="og:image" content="https://i.ibb.co/XWZLrw7/platinum.png">
+    <script src="https://threejs.org/build/three.js"></script>
+    <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
+
+    <link href="img/favicon.ico" rel="icon">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/button.css">
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
+
+    <style>
+        body {
+            background-color: #E64A19; /* Orange background */
+            color: #fff;
+            font-family: 'Permanent Marker', cursive;
+        }
+        .editor-container {
+            display: none;
+            height: 60vh;
+            overflow: hidden;
+        }
+        .editor-container.active {
+            display: flex;
+        }
+        .editor,
+        .preview {
+            flex: 1;
+            height: 95%;
+            margin: 5px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            box-sizing: border-box;
+            overflow: auto;
+            background-color: #FFF3E0;
+            color: #E64A19; /* Orange text */
+            box-shadow: inset 8px 8px 16px #d85d35, inset -8px -8px 16px #ff8e55;
+        }
+        #tabs {
+            margin-bottom: 10px;
+        }
+        .tab {
+            display: inline-block;
+            margin-right: 5px;
+            padding: 8px 16px;
+            background: #E64A19; /* Orange */
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 8px 8px 16px #d85d35, -8px -8px 16px #ff8e55;
+        }
+        .tab.active {
+            background: #FF8A65;
+        }
+        #editor-container-1 .preview,
+        #editor-container-2 .preview,
+        #editor-container-3 .preview {
+            display: none;
+        }
+        #editor-container-1.active .preview,
+        #editor-container-2.active .preview,
+        #editor-container-3.active .preview {
+            display: block;
+        }
+        #saveButton {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #E64A19; /* Orange */
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 8px 8px 16px #d85d35, -8px -8px 16px #ff8e55;
+        }
+        .tab:nth-child(4) {
+            background: linear-gradient(145deg, #4CAF50, #2E7D32);
+        }
+    </style>
+</head>
+<body>
+    <p style="font-family: Black Ops One; font-size: 30px;">Doginals Recursive Builder</p>
+    <div id="tabs">
+        <div class="tab active" onclick="openEditor(1)">3D Recursive HTML</div>
+        <div class="tab" onclick="openEditor(2)">IMAGE Recursive HTML</div>
+        <div class="tab" onclick="openEditor(3)">HTML</div>
+    </div>
+
+    <div class="editor-container active" id="editor-container-1">
+        <textarea class="editor" placeholder="Enter HTML code here...">&lt;!doctype html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;Build Your Own Recursive Doginals&lt;/title&gt;
+    &lt;script type="module" src="/content/c3b478dc1b3a0fa789c65e53aebaa47bd6917a0d17384891bd694c42b1036133i0"&gt;&lt;/script&gt;
+    &lt;style&gt;
+      model-viewer {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+      }
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+      &lt;model-viewer src="/content/e6a7dbd902af0ceac5ef12b435c8a0374c532d7587e63c8655f669c3cbc316a3i0" camera-controls="" touch-action="pan-y" auto-rotate="" ar-status="not-presenting" style="width: 100%; height: 100%;"&gt;&lt;/model-viewer&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</textarea>
+        <iframe class="preview"></iframe>
+    </div>
+
+    <div class="editor-container" id="editor-container-2">
+        <textarea class="editor" placeholder="Enter HTML code here for Editor 2...">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="UTF-8" /&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+    &lt;title&gt;Build Your Own Recursive Doginals&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body style="margin: 0px"&gt;
+    &lt;div&gt;
+      &lt;img style="width:100%;margin:0px" src="/content/98f6806200a6888cad3ec361d5c97b3c0de897668a38eb7c378f472a71c47fafi0" /&gt;
+    &lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</textarea>
+        <iframe class="preview"></iframe>
+    </div>
+
+    <div class="editor-container" id="editor-container-3">
+        <textarea class="editor" placeholder="Enter HTML code here for Editor 3...">&lt;strong&gt;WELCOME TO THE MATRICES RUNIC CIPHERS&lt;/strong&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Interactive 3D Rune Cube with Utilities&lt;/title&gt;
+    &lt;style&gt;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #E64A19; /* Orange background */
+            color: #fff;
+            font-family: 'Permanent Marker', cursive;
+            position: relative;
+        }
+
+        .scene {
+            perspective: 600px;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cube {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-30deg) rotateY(-45deg);
+            animation: cube-rotate 20s linear infinite;
+        }
+
+        .cube__face {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.5);
+            color: #E64A19; /* Orange text */
+            text-shadow: 0 0 8px #E64A19, 0 0 10px #E64A19, 0 0 20px #E64A19;
+        }
+
+        .cube__face--front-side { transform: rotateY(0deg) translateZ(100px); }
+        .cube__face--back-side  { transform: rotateY(180deg) translateZ(100px); }
+        .cube__face--left-side  { transform: rotateY(-90deg) translateZ(100px); }
+        .cube__face--right-side { transform: rotateY(90deg) translateZ(100px); }
+        .cube__face--top-side   { transform: rotateX(90deg) translateZ(100px); }
+        .cube__face--bottom-side{ transform: rotateX(-90deg) translateZ(100px); }
+
+        @keyframes cube-rotate {
+            from { transform: rotateX(0) rotateY(0) rotateZ(0); }
+            to { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        .input-field {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            color: #E64A19; /* Orange text */
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 8px 8px 16px #d85d35, -8px -8px 16px #ff8e55;
+        }
+
+        #translationResult {
+            position: absolute;
+            top: 80px;
+            left: 10px;
+            z-index: 10;
+            color: #E64A19; /* Orange text */
+        }
+
+        button {
+            margin-left: 5px;
+            background: #E64A19; /* Orange */
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 5px 10px;
+            box-shadow: 4px 4px 8px #d85d35, -4px -4px 8px #ff8e55;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div class="scene"&gt;
+    &lt;div class="cube" id="cube"&gt;
+        &lt;div class="cube__face cube__face--front-side"&gt;ᚠ&lt;/div&gt;
+        &lt;div class="cube__face cube__face--back-side"&gt;ᚢ&lt;/div&gt;
+        &lt;div class="cube__face cube__face--left-side"&gt;ᚦ&lt;/div&gt;
+        &lt;div class="cube__face cube__face--right-side"&gt;ᚨ&lt;/div&gt;
+        &lt;div class="cube__face cube__face--top-side"&gt;ᚱ&lt;/div&gt;
+        &lt;div class="cube__face cube__face--bottom-side"&gt;ᚲ&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class="input-field"&gt;
+    &lt;input type="text" id="textInput" placeholder="Enter English or Runes..."&gt;
+    &lt;button onclick="translateToRunes()"&gt;To Runes&lt;/button&gt;
+    &lt;button onclick="translateToEnglish()"&gt;To English&lt;/button&gt;
+    &lt;button onclick="encode()"&gt;Encode Base64&lt;/button&gt;
+    &lt;button onclick="hash()"&gt;SHA-256 Hash&lt;/button&gt;
+    &lt;button onclick="randomizeString()"&gt;Randomize String&lt;/button&gt;
+&lt;/div&gt;
+&lt;div id="translationResult"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+const englishToRune = {
+    'A': 'ᚨ', 'B': 'ᛒ', 'C': 'ᚲ', 'D': 'ᛞ', 'E': 'ᛖ', 
+    'F': 'ᚠ', 'G': 'ᚷ', 'H': 'ᚺ', 'I': 'ᛁ', 'J': 'ᛃ', 
+    'K': 'ᚲ', 'L': 'ᛚ', 'M': 'ᛗ', 'N': 'ᚾ', 'O': 'ᛟ', 
+    'P': 'ᛈ', 'Q': 'ᛩ', 'R': 'ᚱ', 'S': 'ᛊ', 'T': 'ᛏ', 
+    'U': 'ᚢ', 'V': 'ᚹ', 'W': 'ᚹ', 'X': 'ᛉ', 'Y': 'ᛃ', 
+    'Z': 'ᛉ', 'TH': 'ᚦ', ' ': ' ', 'AE': 'ᛇ', 'OE': 'ᛟ'};
+
+const runeToEnglish = {
+    'ᚨ': 'A', 'ᛒ': 'B', 'ᚲ': 'C', 'ᛞ': 'D', 'ᛖ': 'E', 
+    'ᚠ': 'F', 'ᚷ': 'G', 'ᚺ': 'H', 'ᛁ': 'I', 'ᛃ': 'J', 
+    'ᚲ': 'K', 'ᛚ': 'L', 'ᛗ': 'M', 'ᚾ': 'N', 'ᛟ': 'O', 
+    'ᛈ': 'P', 'ᛩ': 'Q', 'ᚱ': 'R', 'ᛊ': 'S', 'ᛏ': 'T', 
+    'ᚢ': 'U', 'ᚹ': 'V', 'ᚹ': 'W', 'ᛉ': 'X', 'ᛃ': 'Y', 
+    'ᛉ': 'Z', 'ᚦ': 'TH', ' ': ' ', 'ᛇ': 'AE', 'ᛟ': 'OE'
+};
+
+// When the DOM is fully loaded, apply the interactions to the cube
+document.addEventListener('DOMContentLoaded', () => {
+    const cube = document.getElementById('cube');
+    cube.addEventListener('click', function() {
+        const randomY = Math.floor(Math.random() * 360);
+        const randomX = Math.floor(Math.random() * 360);
+        const randomZ = Math.floor(Math.random() * 360);
+        cube.style.transition = 'transform 0.6s';
+        cube.style.transform = `rotateY(${randomY}deg) rotateX(${randomX}deg) rotateZ(${randomZ}deg)`;
+    });
+});
+
+// Translation from English to Runes
+function translateToRunes() {
+    const input = document.getElementById('textInput').value.toUpperCase();
+    const specialCases = ['TH', 'AE', 'OE']; // Handle special cases
+    let runes = '';
+    for (let i = 0; i < input.length; i++) {
+        const doubleChar = input.substring(i, i + 2);
+        if (specialCases.includes(doubleChar)) {
+            runes += englishToRune[doubleChar] || '';
+            i++; // Skip the next character as it's a part of the double character
+        } else {
+            runes += englishToRune[input[i]] || input[i]; // Translate or keep the character as-is
+        }
+    }
+    document.getElementById('translationResult').textContent = runes; // Display the runes
+}
+
+// Translation from Runes to English
+function translateToEnglish() {
+    const input = document.getElementById('textInput').value;
+    let english = '';
+    for (let i = 0; i < input.length; i++) {
+        const rune = input[i];
+        english += runeToEnglish[rune] || rune; // Translate or keep the character as-is
+    }
+    document.getElementById('translationResult').textContent = english; // Display the English translation
+}
+
+// Encode a string to Base64
+function encodeToBase64(inputStr) {
+    return window.btoa(inputStr);
+}
+
+// Hash a string with SHA-256
+async function hashWithSHA256(inputStr) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(inputStr);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
+// Button action to encode a string to Base64 and display the result
+function encode() {
+    const inputStr = document.getElementById('textInput').value;
+    const result = encodeToBase64(inputStr);
+    document.getElementById('translationResult').textContent = result;
+}
+
+// Button action to hash a string with SHA-256 and display the result
+async function hash() {
+    const inputStr = document.getElementById('textInput').value;
+    const result = await hashWithSHA256(inputStr);
+    document.getElementById('translationResult').textContent = result;
+}
+
+// Generate and display a random string in the input field
+function randomizeString() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let randomStr = '';
+    for (let i = 0; i < 16; i++) {
+        randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    document.getElementById('textInput').value = randomStr;
+}
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+        <iframe class="preview"></iframe>
+    </div>
+
+    <br>
+    <div id="guidesContainer" style="display: none;">
+        <center>
+            <button id="saveButton">Save HTML</button><br><br>
+            <p style="font-size: 18px; width: 80%">
+                GUIDES <br><br><br>
+                3D Recursive HTML: <br><br>
+                1. Create a 3D object (glb format) using any program, for example Blender <br>
+                2. Inscribe glb file in Doge blockchain <br>
+                3. Use it to create a recursion by simply pasting inscription ID into the model-viewer section. <br>
+                4. Save the HTML file <br>
+                5. Inscribe HTML file in Doge blockchain<br><br>
+                IMAGE Recursive HTML: <br><br>
+                1. Create images (jpg, webp, png format) using any program <br>
+                2. Inscribe in Doge blockchain <br>
+                3. Use it to create a recursion by simply pasting inscription ID into the img section. <br>
+                4. Save the HTML file <br>
+                5. Inscribe HTML file in Doge blockchain <br><br>
+                HTML: <br><br>
+                1. Write any code without using third-party scripts, as in the example <br>
+                2. Save the HTML file <br>
+                3. Inscribe HTML file in Doge blockchain 
+            </p>
+            <p style="font-size: 18px; color: red; width: 80%">
+                Disclaimer! Don't use the example as a finished recursive product! You need to create an object yourself (be it 3D, image or HTML code), inscribe it to Dogecoin blockchain, create a recursion (using the example in the builder) and inscribe it to the blockchain as an HTML file. <br><br>
+            </p>
+        </center>
+    </div>
+
+    <script>
+        const editorContainers = document.querySelectorAll('.editor-container');
+        const saveButton = document.getElementById('saveButton');
+        const tabs = document.querySelectorAll('.tab');
+
+        function openEditor(editorNumber) {
+            editorContainers.forEach(container => {
+                container.classList.remove('active');
+            });
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`editor-container-${editorNumber}`).classList.add('active');
+            tabs[editorNumber - 1].classList.add('active');
+
+            if (editorNumber !== 4) {
+                const activeContainer = document.querySelector('.editor-container.active');
+                const editor = activeContainer.querySelector('.editor');
+                const preview = activeContainer.querySelector('.preview');
+                updatePreview(editor, preview);
+                document.getElementById('guidesContainer').style.display = 'block';
+            } else {
+                document.getElementById('guidesContainer').style.display = 'none';
+            }
+        }
+
+        function updatePreview(editor, preview) {
+            let content = editor.value;
+            content = content.replace(/\/content\//g, 'https://dogecdn.ordinalswallet.com/inscription/content/');
+            preview.srcdoc = content;
+        }
+
+        function listenToEditor(editor, preview) {
+            editor.addEventListener('input', () => {
+                updatePreview(editor, preview);
+            });
+        }
+
+        function initializePreviews() {
+            editorContainers.forEach((container, index) => {
+                const editor = container.querySelector('.editor');
+                const preview = container.querySelector('.preview');
+                updatePreview(editor, preview);
+                listenToEditor(editor, preview);
+            });
+        }
+
+        saveButton.addEventListener('click', () => {
+            const activeContainer = document.querySelector('.editor-container.active');
+            const editor = activeContainer.querySelector('.editor');
+            const content = editor.value;
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'edited_page.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        openEditor(1);
+        initializePreviews();
+    </script>
+</body>
+</html>

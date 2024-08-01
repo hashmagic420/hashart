@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash-A-Collage</title>
+    <style>
+        /* General styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #E64A19; /* Light/Burnt Orange */
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        header {
+            background-color: #333;
+            color: #FFF;
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .toolbar {
+            background-color: #FFF;
+            padding: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .toolbar button,
+        .toolbar select {
+            background-color: #333;
+            color: #FFF;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .toolbar button:hover,
+        .toolbar select:hover {
+            background-color: #555;
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #E64A19;
+            width: 100%;
+            position: relative;
+        }
+
+        #canvas {
+            width: 80%;
+            height: 80%;
+            background-color: #FFF;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .properties-panel {
+            background-color: #FFF;
+            width: 100%;
+            padding: 10px;
+            box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .properties-panel h2 {
+            margin: 0 0 10px 0;
+        }
+
+        #elementProperties {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Neuromorphic design */
+        button,
+        select,
+        #canvas,
+        .properties-panel {
+            border-radius: 10px;
+            background: #f0f0f3;
+            box-shadow: 9px 9px 16px #d1cdc7, -9px -9px 16px #ffffff;
+        }
+
+        button:active,
+        select:active,
+        #canvas:active,
+        .properties-panel:active {
+            box-shadow: inset 9px 9px 16px #d1cdc7, inset -9px -9px 16px #ffffff;
+        }
+
+        #fileInputImage,
+        #fileInputVideo {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hash-A-Collage</h1>
+        </header>
+        <div class="toolbar">
+            <button id="addImage">Add Image</button>
+            <button id="addText">Add Text</button>
+            <select id="shapeDropdown">
+                <option value="">Add Shape</option>
+                <option value="rectangle">Rectangle</option>
+                <option value="circle">Circle</option>
+                <option value="triangle">Triangle</option>
+            </select>
+            <button id="addVideo">Add Video</button>
+            <button id="saveProject">Save Project</button>
+            <button id="loadProject">Load Project</button>
+            <button id="exportHTML">Export as HTML</button>
+            <input type="file" id="fileInputImage" accept="image/*">
+            <input type="file" id="fileInputVideo" accept="video/*">
+        </div>
+        <div class="canvas-container">
+            <div id="canvas"></div>
+        </div>
+        <div class="properties-panel">
+            <h2>Properties</h2>
+            <div id="elementProperties">
+                <!-- Dynamic element properties will be displayed here -->
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('canvas');
+            let selectedElement = null;
+
+            document.getElementById('addImage').addEventListener('click', () => document.getElementById('fileInputImage').click());
+            document.getElementById('addVideo').addEventListener('click', () => document.getElementById('fileInputVideo').click());
+
+            document.getElementById('fileInputImage').addEventListener('change', handleImageUpload);
+            document.getElementById('fileInputVideo').addEventListener('change', handleVideoUpload);
+
+            document.getElementById('addText').addEventListener('click', () => addElement('text'));
+            document.getElementById('shapeDropdown').addEventListener('change', (e) => addElement('shape', e.target.value));
+            document.getElementById('saveProject').addEventListener('click', saveProject);
+            document.getElementById('loadProject').addEventListener('click', loadProject);
+            document.getElementById('exportHTML').addEventListener('click', exportAsHTML);
+
+            function handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '100px';
+                        img.classList.add('draggable');
+                        img.style.position = 'absolute';
+                        img.style.left = '50px';
+                        img.style.top = '50px';
+                        canvas.appendChild(img);
+                        makeElementDraggable(img);
+                        img.addEventListener('click', () => selectElement(img));
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            function handleVideoUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const video = document.createElement('video');
+                        video.src = e.target.result;
+                        video.controls = true;
+                        video.style.width = '200px';
+                        video.classList.add('draggable');
+                        video.style.position = 'absolute';
+                        video.style.left = '50px';
+                        video.style.top = '50px';
+                        canvas.appendChild(video);
+                        makeElementDraggable(video);
+                        video.addEventListener('click', () => selectElement(video));
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            function addElement(type, shapeType = null) {
+                let element;
+                if (type === 'text') {
+                    element = document.createElement('div');
+                    element.innerText = prompt('Enter text:');
+                    element.contentEditable = true;
+                    element.style.fontSize = '20px';
+                    element.style.color = '#000';
+                    element.classList.add('draggable');
+                    element.style.position = 'absolute';
+                    element.style.left = '50px';
+                    element.style.top = '50px';
+                    canvas.appendChild(element);
+                    makeElementDraggable(element);
+                    element.addEventListener('click', () => selectElement(element));
+                } else if (type === 'shape') {
+                    element = document.createElement('div');
+                    if (shapeType === 'rectangle') {
+                        element.style.width = '100px';
+                        element.style.height = '100px';
+                        element.style.backgroundColor = '#333';
+                    } else if (shapeType === 'circle') {
+                        element.style.width = '100px';
+                        element.style.height = '100px';
+                        element.style.backgroundColor = '#333';
+                        element.style.borderRadius = '50%';
+                    } else if (shapeType === 'triangle') {
+                        element.style.width = '0';
+                        element.style.height = '0';
+                        element.style.borderLeft = '50px solid transparent';
+                        element.style.borderRight = '50px solid transparent';
+                        element.style.borderBottom = '100px solid #333';
+                    }
+                    element.classList.add('draggable');
+                    element.style.position = 'absolute';
+                    element.style.left = '50px';
+                    element.style.top = '50px';
+                    canvas.appendChild(element);
+                    makeElementDraggable(element);
+                    element.addEventListener('click', () => selectElement(element));
+                }
+            }
+
+            function makeElementDraggable(element) {
+                let offsetX, offsetY;
+
+                element.addEventListener('mousedown', (e) => {
+                    offsetX = e.clientX - parseInt(element.style.left);
+                    offsetY = e.clientY - parseInt(element.style.top);
+                    document.addEventListener('mousemove', moveElement);
+                    document.addEventListener('mouseup', stopMovingElement);
+                });
+
+                function moveElement(e) {
+                    element.style.left = `${e.clientX - offsetX}px`;
+                    element.style.top = `${e.clientY - offsetY}px`;
+                }
+
+                function stopMovingElement() {
+                    document.removeEventListener('mousemove', moveElement);
+                    document.removeEventListener('mouseup', stopMovingElement);
+                }
+            }
+
+            function selectElement(element) {
+                selectedElement = element;
+                const propertiesPanel = document.getElementById('elementProperties');
+                propertiesPanel.innerHTML = '';
+                // Add properties based on element type
+                if (element.tagName === 'IMG') {
+                    propertiesPanel.innerHTML += '<label>Width: <input type="number" id="elementWidth" value="' + element.style.width.replace('px', '') + '"></label>';
+                    document.getElementById('elementWidth').addEventListener('input', (e) => {
+                        element.style.width = e.target.value + 'px';
+                    });
+                } else if (element.tagName === 'DIV' && element.contentEditable) {
+                    propertiesPanel.innerHTML += '<label>Font Size: <input type="number" id="elementFontSize" value="' + element.style.fontSize.replace('px', '') + '"></label>';
+                    propertiesPanel.innerHTML += '<label>Color: <input type="color" id="elementColor" value="' + rgbToHex(element.style.color) + '"></label>';
+                    document.getElementById('elementFontSize').addEventListener('input', (e) => {
+                        element.style.fontSize = e.target.value + 'px';
+                    });
+                    document.getElementById('elementColor').addEventListener('input', (e) => {
+                        element.style.color = e.target.value;
+                    });
+                } else if (element.tagName === 'DIV') {
+                    propertiesPanel.innerHTML += '<label>Width: <input type="number" id="elementShapeWidth" value="' + element.style.width.replace('px', '') + '"></label>';
+                    propertiesPanel.innerHTML += '<label>Height: <input type="number" id="elementShapeHeight" value="' + element.style.height.replace('px', '') + '"></label>';
+                    propertiesPanel.innerHTML += '<label>Color: <input type="color" id="elementShapeColor" value="' + rgbToHex(element.style.backgroundColor) + '"></label>';
+                    document.getElementById('elementShapeWidth').addEventListener('input', (e) => {
+                        element.style.width = e.target.value + 'px';
+                    });
+                    document.getElementById('elementShapeHeight').addEventListener('input', (e) => {
+                        element.style.height = e.target.value + 'px';
+                    });
+                    document.getElementById('elementShapeColor').addEventListener('input', (e) => {
+                        element.style.backgroundColor = e.target.value;
+                    });
+                } else if (element.tagName === 'VIDEO') {
+                    propertiesPanel.innerHTML += '<label>Width: <input type="number" id="elementVideoWidth" value="' + element.style.width.replace('px', '') + '"></label>';
+                    document.getElementById('elementVideoWidth').addEventListener('input', (e) => {
+                        element.style.width = e.target.value + 'px';
+                    });
+                }
+            }
+
+            // Function to convert RGB to Hex
+            function rgbToHex(rgb) {
+                let sep = rgb.indexOf(",") > -1 ? "," : " ";
+                rgb = rgb.substr(4).split(")")[0].split(sep);
+                let r = (+rgb[0]).toString(16),
+                    g = (+rgb[1]).toString(16),
+                    b = (+rgb[2]).toString(16);
+                if (r.length == 1) r = "0" + r;
+                if (g.length == 1) g = "0" + g;
+                if (b.length == 1) b = "0" + b;
+                return "#" + r + g + b;
+            }
+
+            // Function to save project
+            function saveProject() {
+                const elements = [];
+                document.querySelectorAll('.draggable').forEach(element => {
+                    elements.push({
+                        type: element.tagName.toLowerCase(),
+                        content: element.tagName.toLowerCase() === 'div' && element.contentEditable ? element.innerText : element.src,
+                        styles: {
+                            width: element.style.width,
+                            height: element.style.height,
+                            left: element.style.left,
+                            top: element.style.top,
+                            fontSize: element.style.fontSize,
+                            color: element.style.color,
+                            backgroundColor: element.style.backgroundColor
+                        }
+                    });
+                });
+                localStorage.setItem('collageProject', JSON.stringify(elements));
+                alert('Project saved!');
+            }
+
+            // Function to load project
+            function loadProject() {
+                const elements = JSON.parse(localStorage.getItem('collageProject'));
+                if (elements) {
+                    elements.forEach(data => {
+                        let element;
+                        switch (data.type) {
+                            case 'img':
+                                element = document.createElement('img');
+                                element.src = data.content;
+                                break;
+                            case 'div':
+                                element = document.createElement('div');
+                                if (data.styles.fontSize) {
+                                    element.contentEditable = true;
+                                    element.innerText = data.content;
+                                } else {
+                                    element.style.backgroundColor = data.styles.backgroundColor;
+                                }
+                                break;
+                            case 'video':
+                                element = document.createElement('video');
+                                element.src = data.content;
+                                element.controls = true;
+                                break;
+                        }
+                        if (element) {
+                            Object.assign(element.style, data.styles);
+                            element.classList.add('draggable');
+                            canvas.appendChild(element);
+                            makeElementDraggable(element);
+                            element.addEventListener('click', () => selectElement(element));
+                        }
+                    });
+                } else {
+                    alert('No project found!');
+                }
+            }
+
+            // Function to export collage as HTML
+            function exportAsHTML() {
+                const collageHTML = document.createElement('html');
+                const collageHead = document.createElement('head');
+                const collageBody = document.createElement('body');
+
+                const canvasClone = document.getElementById('canvas').cloneNode(true);
+                collageBody.appendChild(canvasClone);
+
+                collageHTML.appendChild(collageHead);
+                collageHTML.appendChild(collageBody);
+
+                const serializedHTML = new XMLSerializer().serializeToString(collageHTML);
+                const blob = new Blob([serializedHTML], { type: 'text/html' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'collage.html';
+                link.click();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3D Interactive Builder</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.css">
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #controls button, #viewportControls button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #viewportControls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    #viewportControls button {
+      background-color: #008CBA;
+    }
+    #deleteButton {
+      background-color: #f44336 !important;
+    }
+    #addGroundPlaneButton {
+      background-color: #FF9800 !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="addCubeButton">Add Cube</button>
+    <button id="addSphereButton">Add Sphere</button>
+    <button id="addTorusButton">Add Torus</button>
+    <button id="addGroundPlaneButton">Add Ground Plane</button>
+    <button id="addCylinderButton">Add Cylinder</button>
+    <button id="addParticleButton">Add Particle System</button>
+    <button id="deleteButton">Delete Selected</button>
+  </div>
+  <div id="viewportControls">
+    <button id="resetViewport">Reset View</button>
+    <button id="toggleWireframe">Toggle Wireframe</button>
+    <button id="toggleShadows">Toggle Shadows</button>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.25;
+    controls.screenSpacePanning = false;
+    controls.maxPolarAngle = Math.PI / 2;
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(5, 10, 5);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 1024;
+    directionalLight.shadow.mapSize.height = 1024;
+    directionalLight.shadow.camera.near = 1;
+    directionalLight.shadow.camera.far = 20;
+    scene.add(directionalLight);
+
+    const pointLight = new THREE.PointLight(0xff9000, 1, 100);
+    pointLight.position.set(0, 5, 0);
+    pointLight.castShadow = true;
+    scene.add(pointLight);
+
+    camera.position.set(5, 5, 5);
+    camera.lookAt(0, 0, 0);
+
+    const gui = new dat.GUI();
+    const cameraFolder = gui.addFolder('Camera');
+    cameraFolder.add(camera.position, 'x', -10, 10).listen();
+    cameraFolder.add(camera.position, 'y', -10, 10).listen();
+    cameraFolder.add(camera.position, 'z', -10, 10).listen();
+    cameraFolder.open();
+
+    const directionalLightFolder = gui.addFolder('Directional Light');
+    directionalLightFolder.add(directionalLight.position, 'x', -10, 10);
+    directionalLightFolder.add(directionalLight.position, 'y', 0, 20);
+    directionalLightFolder.add(directionalLight.position, 'z', -10, 10);
+    directionalLightFolder.add(directionalLight, 'intensity', 0, 2);
+    directionalLightFolder.open();
+
+    const pointLightFolder = gui.addFolder('Point Light');
+    pointLightFolder.add(pointLight.position, 'x', -10, 10);
+    pointLightFolder.add(pointLight.position, 'y', 0, 10);
+    pointLightFolder.add(pointLight.position, 'z', -10, 10);
+    pointLightFolder.add(pointLight, 'intensity', 0, 2);
+    pointLightFolder.addColor(pointLight, 'color');
+    pointLightFolder.open();
+
+    const shadowFolder = gui.addFolder('Shadow');
+    shadowFolder.add(renderer.shadowMap, 'enabled').name('Enable Shadows');
+    shadowFolder.open();
+
+    function addPrimitive(geometry) {
+      const material = new THREE.MeshPhongMaterial({ color: Math.random() * 0xffffff });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(Math.random() * 4 - 2, Math.random() * 2 + 1, Math.random() * 4 - 2);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      scene.add(mesh);
+      addMeshControls(mesh);
+      selectedMesh = mesh;
+    }
+
+    function addMeshControls(mesh) {
+      if (gui.__folders['Mesh Controls']) {
+        gui.removeFolder(gui.__folders['Mesh Controls']);
+      }
+      const meshFolder = gui.addFolder('Mesh Controls');
+      meshFolder.add(mesh.position, 'x', -5, 5);
+      meshFolder.add(mesh.position, 'y', 0, 5);
+      meshFolder.add(mesh.position, 'z', -5, 5);
+      meshFolder.add(mesh.rotation, 'x', 0, Math.PI * 2);
+      meshFolder.add(mesh.rotation, 'y', 0, Math.PI * 2);
+      meshFolder.add(mesh.rotation, 'z', 0, Math.PI * 2);
+      meshFolder.add(mesh.scale, 'x', 0.01, 0.5).name('scale');
+      meshFolder.add(mesh.scale, 'y', 0.01, 0.5).name('scale');
+      meshFolder.add(mesh.scale, 'z', 0.01, 0.5).name('scale');
+      meshFolder.open();
+    }
+
+    document.getElementById('addCubeButton').addEventListener('click', () => addPrimitive(new THREE.BoxGeometry(1, 1, 1)));
+    document.getElementById('addSphereButton').addEventListener('click', () => addPrimitive(new THREE.SphereGeometry(0.5, 32, 32)));
+    document.getElementById('addTorusButton').addEventListener('click', () => addPrimitive(new THREE.TorusGeometry(0.5, 0.2, 16, 100)));
+    document.getElementById('addCylinderButton').addEventListener('click', () => addPrimitive(new THREE.CylinderGeometry(0.5, 0.5, 1, 32)));
+
+    let groundPlane;
+    document.getElementById('addGroundPlaneButton').addEventListener('click', () => {
+      if (groundPlane) scene.remove(groundPlane);
+      const groundGeometry = new THREE.PlaneGeometry(20, 20);
+      const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.8, metalness: 0.2 });
+      groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
+      groundPlane.rotation.x = -Math.PI / 2;
+      groundPlane.receiveShadow = true;
+      scene.add(groundPlane);
+      if (gui.__folders['Ground Plane']) gui.removeFolder(gui.__folders['Ground Plane']);
+      const groundFolder = gui.addFolder('Ground Plane');
+      groundFolder.add(groundPlane.position, 'y', -5, 5);
+      groundFolder.add(groundPlane.scale, 'x', 1, 50);
+      groundFolder.add(groundPlane.scale, 'y', 1, 50);
+      groundFolder.addColor(groundMaterial, 'color');
+      groundFolder.add(groundMaterial, 'roughness', 0, 1);
+      groundFolder.add(groundMaterial, 'metalness', 0, 1);
+      groundFolder.open();
+    });
+
+    let particleSystem;
+    let particleParams = { count: 1000, size: 0.1, color: 0xffffff, opacity: 1.0 };
+    document.getElementById('addParticleButton').addEventListener('click', () => {
+      if (particleSystem) scene.remove(particleSystem);
+      let vertices = [];
+      for (let i = 0; i < particleParams.count; i++) {
+        vertices.push(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      const material = new THREE.PointsMaterial({ color: particleParams.color, size: particleParams.size, transparent: true, opacity: particleParams.opacity });
+      particleSystem = new THREE.Points(geometry, material);
+      scene.add(particleSystem);
+      if (gui.__folders['Particle System']) gui.removeFolder(gui.__folders['Particle System']);
+      const particleFolder = gui.addFolder('Particle System');
+      particleFolder.add(particleParams, 'count', 100, 5000).step(1).onChange(resetParticleSystem);
+      particleFolder.add(particleParams, 'size', 0.01, 1).onChange(resetParticleSystem);
+      particleFolder.addColor(particleParams, 'color').onChange(resetParticleSystem);
+      particleFolder.add(particleParams, 'opacity', 0, 1).onChange(resetParticleSystem);
+      particleFolder.open();
+    });
+
+    function resetParticleSystem() {
+      if (particleSystem) scene.remove(particleSystem);
+      let vertices = [];
+      for (let i = 0; i < particleParams.count; i++) {
+        vertices.push(Math.random() * 10 - 5, Math.random() * 10 - 5, Math.random() * 10 - 5);
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      const material = new THREE.PointsMaterial({ color: particleParams.color, size: particleParams.size, transparent: true, opacity: particleParams.opacity });
+      particleSystem = new THREE.Points(geometry, material);
+      scene.add(particleSystem);
+    }
+
+    const gridHelper = new THREE.GridHelper(20, 20);
+    scene.add(gridHelper);
+
+    let selectedMesh;
+    document.getElementById('deleteButton').addEventListener('click', () => {
+      if (selectedMesh) {
+        scene.remove(selectedMesh);
+        if (gui.__folders['Mesh Controls']) gui.removeFolder(gui.__folders['Mesh Controls']);
+        selectedMesh = null;
+      }
+    });
+
+    document.getElementById('resetViewport').addEventListener('click', () => {
+      camera.position.set(5, 5, 5);
+      camera.lookAt(0, 0, 0);
+      controls.reset();
+    });
+
+    document.getElementById('toggleWireframe').addEventListener('click', () => {
+      scene.traverse(child => {
+        if (child.isMesh) child.material.wireframe = !child.material.wireframe;
+      });
+    });
+
+    document.getElementById('toggleShadows').addEventListener('click', () => {
+      renderer.shadowMap.enabled = !renderer.shadowMap.enabled;
+      scene.traverse(child => {
+        if (child.isMesh) {
+          child.castShadow = renderer.shadowMap.enabled;
+          child.receiveShadow = renderer.shadowMap.enabled;
+        }
+      });
+    });
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    window.addEventListener('click', (event) => {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children);
+      if (intersects.length > 0) {
+        selectedMesh = intersects[0].object;
+        addMeshControls(selectedMesh);
+      } else {
+        selectedMesh = null;
+        if (gui.__folders['Mesh Controls']) gui.removeFolder(gui.__folders['Mesh Controls']);
+      }
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

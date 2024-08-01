@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGIC HTML EDITOR</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #FF7043;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #editorContainer {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .editor {
+            display: flex;
+            height: 150px; /* Fixed height for text areas */
+        }
+        textarea {
+            flex: 1;
+            margin: 5px;
+            padding: 8px;
+            border: 2px solid #333;
+            background-color: #3a3f4a;
+            color: #ffffff;
+            font-size: 16px;
+            resize: none;
+        }
+        #output {
+            flex-grow: 1;
+            background-color: #fff;
+            color: #000;
+            border: 1px solid #333;
+            margin: 5px;
+        }
+        #librarySelector, #resizeControls, .actions {
+            margin: 10px 5px;
+        }
+        button, select {
+            padding: 10px;
+            margin-right: 10px;
+            background-color: #E64A19;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #D54B1A;
+        }
+        h1, footer {
+            text-align: center;
+            font-size: 2em;
+            text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 20px #ffffff, 0 0 40px #0ff, 0 0 80px #0ff, 0 0 90px #0ff, 0 0 100px #0ff, 0 0 150px #0ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>MAGIC HTML EDITOR</h1>
+    <div id="editorContainer">
+        <div class="editor">
+            <textarea id="html" placeholder="HTML Code"></textarea>
+            <textarea id="css" placeholder="CSS Code"></textarea>
+            <textarea id="js" placeholder="JavaScript Code"></textarea>
+        </div>
+        <div class="librarySelector">
+            <select id="librarySelector">
+                <option value="html">HTML Only</option>
+                <option value="p5">HTML/P5.js</option>
+                <option value="three">HTML/Three.js</option>
+                <option value="all">HTML/All</option>
+            </select>
+        </div>
+        <div class="actions">
+            <button onclick="updateOutput()">Update Preview</button>
+            <button onclick="exportHTML()">Export as HTML</button>
+        </div>
+        <iframe id="output" title="Code Preview"></iframe>
+    </div>
+    <footer>
+        Brought to you by: hash.magic🧙‍♂️
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script>
+        const htmlInput = document.getElementById('html');
+        const cssInput = document.getElementById('css');
+        const jsInput = document.getElementById('js');
+        const output = document.getElementById('output');
+        const librarySelector = document.getElementById('librarySelector');
+
+        function updateOutput() {
+            const html = htmlInput.value;
+            const css = cssInput.value;
+            const js = jsInput.value;
+            const libraryChoice = librarySelector.value;
+
+            let scripts = '';
+            if (libraryChoice === 'p5' || libraryChoice === 'all') {
+                scripts += '<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"><\/script>';
+            }
+            if (libraryChoice === 'three' || libraryChoice === 'all') {
+                scripts += '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>';
+            }
+
+            output.contentDocument.open();
+            output.contentDocument.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>${css}</style>
+                </head>
+                <body>${html}${scripts}<script>${js}<\/script></body>
+                </html>
+            `);
+            output.contentDocument.close();
+        }
+
+        function exportHTML() {
+            const fullDocument = output.contentDocument.documentElement.outerHTML;
+            const blob = new Blob([fullDocument], { type: 'text/html' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = 'exported_html.html';
+            link.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memento Mori Grid</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    .title {
+      font-size: 2em;
+      font-weight: bold;
+      font-family: 'Cursive', sans-serif;
+      color: #CC5500; /* Burnt orange */
+      margin-bottom: 20px;
+      z-index: 2;
+      position: absolute;
+    }
+    #canvasContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    canvas {
+      border: 1px solid black;
+      z-index: 1;
+      position: relative;
+    }
+    .download-btn {
+      position: absolute;
+      top: 60px;
+      z-index: 3;
+      padding: 10px 20px;
+      background-color: #CC5500; /* Burnt orange */
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="title">Memento Mori</div>
+  <button class="download-btn" onclick="downloadBoard()">Download Board</button>
+  <div id="canvasContainer"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <script>
+    let cols = 52; // weeks per year
+    let rows = 90; // assuming a lifespan of 90 years
+    let cellSize = 10;
+    let grid = [];
+    let clouds = [];
+    let sun, moon, skyColor, cloudColor;
+
+    function setup() {
+      let canvas = createCanvas(windowWidth, windowHeight);
+      canvas.parent('canvasContainer');
+      // Initialize grid with false values (indicating unclicked)
+      for (let y = 0; y < rows; y++) {
+        grid[y] = [];
+        for (let x = 0; x < cols; x++) {
+          grid[y][x] = false;
+        }
+      }
+
+      // Initialize clouds
+      for (let i = 0; i < 10; i++) {
+        clouds.push(new Cloud());
+      }
+
+      // Setup sun and moon
+      sun = createVector(width - 100, 100);
+      moon = createVector(width - 100, 100);
+
+      frameRate(30); // Set frame rate for smooth animation
+    }
+    
+    function draw() {
+      updateTime();
+      background(skyColor);
+
+      // Draw clouds
+      for (let cloud of clouds) {
+        cloud.move();
+        cloud.display();
+      }
+
+      // Draw sun or moon
+      if (hour() >= 6 && hour() < 18) {
+        fill(255, 204, 0);
+        ellipse(sun.x, sun.y, 100, 100);
+      } else {
+        fill(255);
+        ellipse(moon.x, moon.y, 100, 100);
+      }
+
+      // Draw the grid
+      stroke(0);
+      let offsetX = (width - cols * cellSize) / 2;
+      let offsetY = (height - rows * cellSize) / 2;
+      translate(offsetX, offsetY);
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (grid[y][x]) {
+            fill(0); // filled color for clicked cells
+          } else {
+            fill(255); // unfilled color for unclicked cells
+          }
+          rect(x * cellSize, y * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    function mousePressed() {
+      let x = Math.floor((mouseX - (width - cols * cellSize) / 2) / cellSize);
+      let y = Math.floor((mouseY - (height - rows * cellSize) / 2) / cellSize);
+      // Check if mouse is within canvas bounds
+      if (x >= 0 && x < cols && y >= 0 && y < rows) {
+        grid[y][x] = !grid[y][x]; // Toggle cell state
+        redraw();
+      }
+    }
+
+    function updateTime() {
+      let h = hour();
+      let lunarPhase = (day() % 30) / 30; // Approximation of lunar cycle
+
+      if (h >= 6 && h < 18) {
+        skyColor = color(135, 206, 235); // Blue sky
+        cloudColor = color(255); // White clouds
+      } else {
+        skyColor = color(0, 0, 50); // Dark sky
+        cloudColor = color(100); // Grey clouds
+        // Adjust moon position based on lunar phase
+        moon.y = map(lunarPhase, 0, 1, height - 100, 100);
+      }
+    }
+
+    class Cloud {
+      constructor() {
+        this.x = random(width);
+        this.y = random(height / 2);
+        this.size = random(50, 100);
+        this.speed = random(0.5, 2);
+      }
+
+      move() {
+        this.x += this.speed;
+        if (this.x > width) {
+          this.x = -this.size;
+          this.y = random(height / 2);
+        }
+      }
+
+      display() {
+        fill(cloudColor);
+        noStroke();
+        ellipse(this.x, this.y, this.size);
+        ellipse(this.x + this.size / 2, this.y + this.size / 3, this.size);
+        ellipse(this.x - this.size / 2, this.y + this.size / 3, this.size);
+      }
+    }
+
+    function downloadBoard() {
+      saveCanvas('memento_mori_board', 'png');
+    }
+  </script>
+</body>
+</html>
